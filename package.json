@@ -1,0 +1,11 @@
+{
+  "name": "task-management-app",
+  "version": "1.0.0",
+  "description": "Full-stack Task Management Web Application for intern submission",
+  "main": "server/index.js",
+  "scripts": {
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "server": "cd server && npm start",
+    "client": "cd client && npm run dev"
+  }
+}
