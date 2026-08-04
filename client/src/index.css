@@ -139,10 +139,13 @@
   --priority-urgent: #ff1e42;
 }
 
-* {
+html, body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
@@ -150,7 +153,6 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
-  overflow-x: hidden;
   line-height: 1.5;
   transition: background-color 0.4s ease, color 0.4s ease;
 }
