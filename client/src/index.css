@@ -384,6 +384,87 @@ h1, h2, h3, h4, h5, h6 {
   to { transform: rotate(360deg); }
 }
 
+/* ========================================================
+   Mobile Responsiveness & Touch Optimization
+   ======================================================== */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 12px 10px;
+  }
+
+  .glass-panel {
+    padding: 14px !important;
+  }
+
+  /* Compact Navbar for mobile */
+  header.glass-panel {
+    padding: 12px 14px !important;
+  }
+
+  /* Input fields touch friendly */
+  .input-field, .select-field, .textarea-field {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+    padding: 10px 12px;
+  }
+
+  /* Buttons on mobile */
+  .btn {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  /* Stats grid 2-columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .stat-card-title {
+    font-size: 0.72rem !important;
+  }
+
+  .stat-card-value {
+    font-size: 1.4rem !important;
+  }
+
+  /* Mobile Floating Action Button (FAB) */
+  .mobile-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+    z-index: 99;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Modal responsiveness */
+  .modal-container {
+    padding: 18px !important;
+    margin: 10px !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .brand-title {
+    font-size: 1.15rem !important;
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

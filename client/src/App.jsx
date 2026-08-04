@@ -6,7 +6,7 @@ import ListView from './components/ListView';
 import TaskModal from './components/TaskModal';
 import AuthModal from './components/AuthModal';
 import AnimatedBackground from './components/AnimatedBackground';
-import { Sparkles, CheckCircle2, Loader2 } from 'lucide-react';
+import { Sparkles, CheckCircle2, Loader2, Plus } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -249,8 +249,8 @@ export default function App() {
 
             {/* Loading Indicator Spinner */}
             {loadingTasks && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '16px', color: 'var(--primary)', fontWeight: 600 }}>
-                <Loader2 size={20} className="spin-icon" style={{ animation: 'spin 1s linear infinite' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', color: 'var(--primary)', fontWeight: 600 }}>
+                <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
                 <span>Syncing tasks...</span>
               </div>
             )}
@@ -276,50 +276,57 @@ export default function App() {
         ) : (
           /* Welcome Guest Banner */
           <div className="glass-panel animate-fade" style={{
-            padding: '60px 40px',
+            padding: '40px 24px',
             borderRadius: 'var(--radius-lg)',
             textAlign: 'center',
             maxWidth: '680px',
-            margin: '40px auto'
+            margin: '20px auto'
           }}>
             <div style={{
-              width: '64px',
-              height: '64px',
+              width: '56px',
+              height: '56px',
               borderRadius: '50%',
               background: 'var(--gradient-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 20px auto',
+              margin: '0 auto 16px auto',
               boxShadow: 'var(--shadow-glow)'
             }}>
-              <Sparkles size={32} color="#ffffff" />
+              <Sparkles size={28} color="#ffffff" />
             </div>
 
-            <h2 style={{ fontSize: '2.2rem', marginBottom: '12px' }}>Welcome to TaskMaster</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6, marginBottom: '28px' }}>
-              Full-stack Task Management Web Application with custom dynamic color themes, SQLite database persistence, JWT authentication, and WebSockets.
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Welcome to TaskMaster</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
+              Full-stack Task Management Web Application optimized for mobile and desktop screens with real-time WebSockets.
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '12px 28px', fontSize: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
                 Sign In or Register
               </button>
             </div>
 
             {/* Key Features Overview Pills */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', marginTop: '40px', paddingTop: '28px', borderTop: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={16} color="var(--primary)" /> JWT Authentication
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <CheckCircle2 size={15} color="var(--primary)" /> JWT Authentication
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={16} color="var(--primary)" /> Real-time WebSockets
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={16} color="var(--primary)" /> Kanban & List Views
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <CheckCircle2 size={15} color="var(--primary)" /> Mobile Responsive
               </div>
             </div>
           </div>
+        )}
+
+        {/* Mobile Floating Action Button (FAB) for logged-in users */}
+        {user && (
+          <button className="mobile-fab" onClick={() => openNewTaskModal('todo')} title="Create New Task">
+            <Plus size={28} />
+          </button>
         )}
 
         {/* Task Modal */}
