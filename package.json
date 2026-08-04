@@ -4,6 +4,8 @@
   "description": "Full-stack Task Management Web Application for intern submission",
   "main": "server/index.js",
   "scripts": {
+    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+    "start": "node server/index.js",
     "install:all": "cd server && npm install && cd ../client && npm install",
     "server": "cd server && npm start",
     "client": "cd client && npm run dev"

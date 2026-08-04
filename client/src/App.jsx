@@ -84,8 +84,10 @@ export default function App() {
   const [wsConnected, setWsConnected] = useState(false);
 
   useEffect(() => {
+    const isDev = window.location.port === '3000';
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.hostname}:5000`;
+    const wsHost = isDev ? `${window.location.hostname}:5000` : window.location.host;
+    const wsUrl = `${protocol}//${wsHost}`;
     
     let ws = null;
     try {
