@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -28,19 +29,32 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Task Management API is running', timestamp: new Date().toISOString() });
 });
 
-// Serve static frontend build files for Render deployment
-const clientDistPath = path.join(__dirname, '../client/dist');
-app.use(express.static(clientDistPath));
+// Resolve client dist path reliably across environments
+let clientDistPath = path.resolve(__dirname, '../client/dist');
+if (!fs.existsSync(clientDistPath)) {
+  clientDistPath = path.resolve(process.cwd(), 'client/dist');
+}
+if (!fs.existsSync(clientDistPath)) {
+  clientDistPath = path.resolve(process.cwd(), '../client/dist');
+}
+
+console.log(`📁 Serving client dist from: ${clientDistPath} (Exists: ${fs.existsSync(clientDistPath)})`);
+
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+}
 
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
-    if (err) {
-      res.status(500).send('Frontend build not found. Please build the client first.');
-    }
-  });
+
+  const indexPath = path.join(clientDistPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+
+  res.status(500).send('Frontend build files not found. Please ensure client/dist is built.');
 });
 
 // Create HTTP & WebSocket server
