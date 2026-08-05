@@ -52,19 +52,8 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, default
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      background: 'rgba(15, 23, 42, 0.75)',
-      backdropFilter: 'blur(8px)'
-    }}>
-      <div className="glass-panel animate-fade" style={{
-        width: '100%',
+    <div className="modal-overlay">
+      <div className="glass-panel modal-card animate-fade" style={{
         maxWidth: '520px',
         borderRadius: 'var(--radius-lg)',
         padding: '28px',
@@ -118,7 +107,7 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, default
           </div>
 
           {/* Grid for Status & Priority */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
             <div className="input-group">
               <label className="input-label">Status</label>
               <select
@@ -148,7 +137,7 @@ export default function TaskModal({ isOpen, onClose, onSave, taskToEdit, default
           </div>
 
           {/* Grid for Due Date & Tags */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
             <div className="input-group">
               <label className="input-label">Due Date</label>
               <input

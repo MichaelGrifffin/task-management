@@ -46,19 +46,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 100,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      background: 'rgba(15, 23, 42, 0.75)',
-      backdropFilter: 'blur(8px)'
-    }}>
-      <div className="glass-panel animate-fade" style={{
-        width: '100%',
+    <div className="modal-overlay">
+      <div className="glass-panel modal-card animate-fade" style={{
         maxWidth: '440px',
         borderRadius: 'var(--radius-lg)',
         padding: '28px',

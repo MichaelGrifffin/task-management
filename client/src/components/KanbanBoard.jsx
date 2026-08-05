@@ -63,9 +63,9 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
       </div>
 
       {/* Grid Layout */}
-      <div style={{
+      <div className="kanban-grid" style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
         gap: '20px',
         alignItems: 'start'
       }}>
