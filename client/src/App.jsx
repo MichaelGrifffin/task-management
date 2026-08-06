@@ -6,6 +6,8 @@ import ListView from './components/ListView';
 import TaskModal from './components/TaskModal';
 import AuthModal from './components/AuthModal';
 import AnimatedBackground from './components/AnimatedBackground';
+import CursorFollower from './components/CursorFollower';
+import ThemeSelectorModal from './components/ThemeSelectorModal';
 import { Sparkles, CheckCircle2, Loader2, Plus } from 'lucide-react';
 
 export default function App() {
@@ -20,14 +22,55 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   
-  // Theme state: 'midnight' | 'emerald' | 'sunset' | 'crimson'
+  // Theme & Appearance State
   const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'midnight');
+  const [bgColorMode, setBgColorMode] = useState(localStorage.getItem('app-bg-mode') || 'theme');
+  const [customBgColor, setCustomBgColor] = useState(localStorage.getItem('app-custom-bg') || '#0b0f19');
+  const [enableCursorFx, setEnableCursorFx] = useState(
+    localStorage.getItem('app-cursor-fx') !== 'false'
+  );
+  const [enableCursorRing, setEnableCursorRing] = useState(
+    localStorage.getItem('app-cursor-ring') !== 'false'
+  );
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
-  // Set theme attribute on html body & save choice
+  // Determine effective background color
+  const getEffectiveBgColor = () => {
+    if (bgColorMode === 'theme') return null;
+    if (bgColorMode === 'pitch') return '#000000';
+    if (bgColorMode === 'slate') return '#0b1120';
+    if (bgColorMode === 'violet') return '#0c0716';
+    if (bgColorMode === 'charcoal') return '#12141a';
+    if (bgColorMode === 'custom') return customBgColor;
+    return null;
+  };
+
+  // Sync theme & background attributes
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('app-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    const effectiveBg = getEffectiveBgColor();
+    if (effectiveBg) {
+      document.body.style.backgroundColor = effectiveBg;
+      document.documentElement.style.setProperty('--bg-dark', effectiveBg);
+    } else {
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.removeProperty('--bg-dark');
+    }
+    localStorage.setItem('app-bg-mode', bgColorMode);
+    localStorage.setItem('app-custom-bg', customBgColor);
+  }, [bgColorMode, customBgColor, theme]);
+
+  useEffect(() => {
+    localStorage.setItem('app-cursor-fx', enableCursorFx.toString());
+  }, [enableCursorFx]);
+
+  useEffect(() => {
+    localStorage.setItem('app-cursor-ring', enableCursorRing.toString());
+  }, [enableCursorRing]);
 
   // Check auth user on mount
   useEffect(() => {
@@ -218,8 +261,15 @@ export default function App() {
 
   return (
     <>
-      {/* Animated Canvas Background adapting to active color theme */}
-      <AnimatedBackground theme={theme} />
+      {/* Animated Canvas Background with Cursor Interactions & Theme/BG Colors */}
+      <AnimatedBackground
+        theme={theme}
+        bgColor={getEffectiveBgColor()}
+        enableCursorFx={enableCursorFx}
+      />
+
+      {/* Sleek Precision Cursor Follower Ring */}
+      <CursorFollower enabled={enableCursorRing} />
 
       <div className="app-container">
         {/* Top Navbar */}
@@ -228,6 +278,7 @@ export default function App() {
           onOpenAuth={() => setIsAuthModalOpen(true)}
           onLogout={logout}
           onOpenNewTask={() => openNewTaskModal('todo')}
+          onOpenThemeModal={() => setIsThemeModalOpen(true)}
           activeView={activeView}
           setActiveView={setActiveView}
           searchQuery={searchQuery}
@@ -298,12 +349,15 @@ export default function App() {
 
             <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Welcome to TaskMaster</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Full-stack Task Management Web Application optimized for mobile and desktop screens with real-time WebSockets.
+              Full-stack Task Management Web Application optimized for mobile and desktop screens with real-time WebSockets and cursor animations.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
               <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
                 Sign In or Register
+              </button>
+              <button className="btn btn-secondary" onClick={() => setIsThemeModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
+                Explore Themes & Colors
               </button>
             </div>
 
@@ -316,7 +370,7 @@ export default function App() {
                 <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Mobile Responsive
+                <CheckCircle2 size={15} color="var(--primary)" /> Interactive Cursor FX
               </div>
             </div>
           </div>
@@ -343,6 +397,22 @@ export default function App() {
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
           onAuthSuccess={handleAuthSuccess}
+        />
+
+        {/* Theme & Appearance Selector Modal */}
+        <ThemeSelectorModal
+          isOpen={isThemeModalOpen}
+          onClose={() => setIsThemeModalOpen(false)}
+          theme={theme}
+          setTheme={setTheme}
+          bgColorMode={bgColorMode}
+          setBgColorMode={setBgColorMode}
+          customBgColor={customBgColor}
+          setCustomBgColor={setCustomBgColor}
+          enableCursorFx={enableCursorFx}
+          setEnableCursorFx={setEnableCursorFx}
+          enableCursorRing={enableCursorRing}
+          setEnableCursorRing={setEnableCursorRing}
         />
       </div>
     </>

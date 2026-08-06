@@ -17,6 +17,7 @@ export default function Navbar({
   onOpenAuth,
   onLogout,
   onOpenNewTask,
+  onOpenThemeModal,
   activeView,
   setActiveView,
   searchQuery,
@@ -59,7 +60,7 @@ export default function Navbar({
             </div>
           </div>
 
-          {/* Desktop Search Bar (Hidden in Row 1 on mobile, rendered below for full width on small screens) */}
+          {/* Desktop Search Bar */}
           <div style={{ flex: '1 1 300px', maxWidth: '500px', position: 'relative' }}>
             <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
@@ -72,10 +73,10 @@ export default function Navbar({
             />
           </div>
 
-          {/* Top Actions: Theme, WS, User */}
+          {/* Top Actions: Theme, Appearance Modal, WS, User */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto' }}>
             
-            {/* Theme Selector */}
+            {/* Quick Theme Selector Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-surface)', padding: '4px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
               <Palette size={14} color="var(--primary)" />
               <select
@@ -87,8 +88,23 @@ export default function Navbar({
                 <option value="emerald" style={{ background: '#06120e', color: '#34d399' }}>Emerald</option>
                 <option value="sunset" style={{ background: '#140b12', color: '#fb7185' }}>Sunset</option>
                 <option value="crimson" style={{ background: '#070709', color: '#ff1e42' }}>Crimson</option>
+                <option value="nebula" style={{ background: '#0f0a1c', color: '#e879f9' }}>Nebula</option>
+                <option value="ocean" style={{ background: '#051329', color: '#38bdf8' }}>Ocean</option>
+                <option value="amber" style={{ background: '#171008', color: '#fbbf24' }}>Amber</option>
+                <option value="noir" style={{ background: '#000000', color: '#ffffff' }}>Noir</option>
               </select>
             </div>
+
+            {/* Custom Appearance & Background Button */}
+            <button
+              className="btn btn-secondary"
+              onClick={onOpenThemeModal}
+              title="Customize Themes, Background Colors & Cursor Animations"
+              style={{ padding: '6px 12px', fontSize: '0.78rem' }}
+            >
+              <Palette size={14} color="var(--primary)" />
+              <span className="nav-theme-label">Appearance</span>
+            </button>
 
             {/* Live WS Status Dot */}
             <div className="ws-indicator" style={{ padding: '4px 10px' }} title={wsConnected ? 'WebSocket Connected' : 'Offline'}>
