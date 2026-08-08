@@ -6,6 +6,7 @@ import {
   Plus, 
   Search, 
   Palette,
+  Flame,
   LogOut, 
   User, 
   Wifi, 
@@ -73,7 +74,7 @@ export default function Navbar({
             />
           </div>
 
-          {/* Top Actions: Theme, Appearance Modal, WS, User */}
+          {/* Top Actions: Theme, Background Customizer Modal, WS, User */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto' }}>
             
             {/* Quick Theme Selector Dropdown */}
@@ -95,15 +96,23 @@ export default function Navbar({
               </select>
             </div>
 
-            {/* Custom Appearance & Background Button */}
+            {/* Interactive Customizable Background & Dragon FX Button */}
             <button
-              className="btn btn-secondary"
+              className="btn btn-primary"
               onClick={onOpenThemeModal}
-              title="Customize Themes, Background Colors & Cursor Animations"
-              style={{ padding: '6px 12px', fontSize: '0.78rem' }}
+              title="Customize Dragon Animation, Colors & Background FX"
+              style={{
+                padding: '6px 14px',
+                fontSize: '0.8rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--gradient-primary)',
+                boxShadow: '0 0 14px rgba(99, 102, 241, 0.4)'
+              }}
             >
-              <Palette size={14} color="var(--primary)" />
-              <span className="nav-theme-label">Appearance</span>
+              <Flame size={15} color="#ffffff" style={{ filter: 'drop-shadow(0 0 4px #ff5500)' }} />
+              <span className="nav-theme-label" style={{ fontWeight: 700 }}>Background FX</span>
             </button>
 
             {/* Live WS Status Dot */}

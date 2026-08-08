@@ -8,7 +8,7 @@ import AuthModal from './components/AuthModal';
 import AnimatedBackground from './components/AnimatedBackground';
 import CursorFollower from './components/CursorFollower';
 import ThemeSelectorModal from './components/ThemeSelectorModal';
-import { Sparkles, CheckCircle2, Loader2, Plus } from 'lucide-react';
+import { Sparkles, CheckCircle2, Loader2, Plus, Flame } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -22,7 +22,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   
-  // Theme & Appearance State
+  // Theme & Background Dragon State
   const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'midnight');
   const [bgColorMode, setBgColorMode] = useState(localStorage.getItem('app-bg-mode') || 'theme');
   const [customBgColor, setCustomBgColor] = useState(localStorage.getItem('app-custom-bg') || '#0b0f19');
@@ -32,6 +32,20 @@ export default function App() {
   const [enableCursorRing, setEnableCursorRing] = useState(
     localStorage.getItem('app-cursor-ring') !== 'false'
   );
+
+  // Dragon Customizer State
+  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'dragon');
+  const [dragonTheme, setDragonTheme] = useState(localStorage.getItem('app-dragon-theme') || 'inferno');
+  const [dragonSize, setDragonSize] = useState(
+    parseFloat(localStorage.getItem('app-dragon-size')) || 1.0
+  );
+  const [dragonSpeed, setDragonSpeed] = useState(
+    parseFloat(localStorage.getItem('app-dragon-speed')) || 1.0
+  );
+  const [enableFireBreath, setEnableFireBreath] = useState(
+    localStorage.getItem('app-fire-breath') !== 'false'
+  );
+
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // Determine effective background color
@@ -45,7 +59,7 @@ export default function App() {
     return null;
   };
 
-  // Sync theme & background attributes
+  // Sync theme & background attributes & localStorage
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('app-theme', theme);
@@ -71,6 +85,26 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('app-cursor-ring', enableCursorRing.toString());
   }, [enableCursorRing]);
+
+  useEffect(() => {
+    localStorage.setItem('app-bg-anim-mode', bgAnimMode);
+  }, [bgAnimMode]);
+
+  useEffect(() => {
+    localStorage.setItem('app-dragon-theme', dragonTheme);
+  }, [dragonTheme]);
+
+  useEffect(() => {
+    localStorage.setItem('app-dragon-size', dragonSize.toString());
+  }, [dragonSize]);
+
+  useEffect(() => {
+    localStorage.setItem('app-dragon-speed', dragonSpeed.toString());
+  }, [dragonSpeed]);
+
+  useEffect(() => {
+    localStorage.setItem('app-fire-breath', enableFireBreath.toString());
+  }, [enableFireBreath]);
 
   // Check auth user on mount
   useEffect(() => {
@@ -261,11 +295,16 @@ export default function App() {
 
   return (
     <>
-      {/* Animated Canvas Background with Cursor Interactions & Theme/BG Colors */}
+      {/* Animated Canvas Background with Cursor Dragon Animation */}
       <AnimatedBackground
         theme={theme}
         bgColor={getEffectiveBgColor()}
         enableCursorFx={enableCursorFx}
+        bgAnimMode={bgAnimMode}
+        dragonTheme={dragonTheme}
+        dragonSize={dragonSize}
+        dragonSpeed={dragonSpeed}
+        enableFireBreath={enableFireBreath}
       />
 
       {/* Sleek Precision Cursor Follower Ring */}
@@ -349,32 +388,61 @@ export default function App() {
 
             <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Welcome to TaskMaster</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Full-stack Task Management Web Application optimized for mobile and desktop screens with real-time WebSockets and cursor animations.
+              Full-stack Task Management Web Application with cursor-based Dragon Background animation and real-time WebSockets.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
               <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
                 Sign In or Register
               </button>
-              <button className="btn btn-secondary" onClick={() => setIsThemeModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
-                Explore Themes & Colors
+              <button className="btn btn-secondary" onClick={() => setIsThemeModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Flame size={16} color="var(--primary)" /> Customize Dragon & Background
               </button>
             </div>
 
             {/* Key Features Overview Pills */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> JWT Authentication
+                <CheckCircle2 size={15} color="var(--primary)" /> Interactive Dragon Animation
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Interactive Cursor FX
+                <CheckCircle2 size={15} color="var(--primary)" /> Customizable Background & Themes
               </div>
             </div>
           </div>
         )}
+
+        {/* Floating Quick-Access Customizable Background Button */}
+        <button
+          onClick={() => setIsThemeModalOpen(true)}
+          className="glass-panel"
+          title="Quick Customize Dragon & Background"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '24px',
+            zIndex: 900,
+            borderRadius: '30px',
+            padding: '10px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            border: '1.5px solid var(--primary)',
+            background: 'var(--bg-glass)',
+            boxShadow: 'var(--shadow-glow)',
+            color: 'var(--text-main)',
+            fontWeight: 700,
+            fontSize: '0.82rem',
+            transition: 'all 0.25 ease'
+          }}
+        >
+          <Flame size={18} color="var(--primary)" style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }} />
+          <span>Background & Dragon</span>
+        </button>
 
         {/* Mobile Floating Action Button (FAB) for logged-in users */}
         {user && (
@@ -399,7 +467,7 @@ export default function App() {
           onAuthSuccess={handleAuthSuccess}
         />
 
-        {/* Theme & Appearance Selector Modal */}
+        {/* Theme & Background Dragon Selector Modal */}
         <ThemeSelectorModal
           isOpen={isThemeModalOpen}
           onClose={() => setIsThemeModalOpen(false)}
@@ -413,6 +481,16 @@ export default function App() {
           setEnableCursorFx={setEnableCursorFx}
           enableCursorRing={enableCursorRing}
           setEnableCursorRing={setEnableCursorRing}
+          bgAnimMode={bgAnimMode}
+          setBgAnimMode={setBgAnimMode}
+          dragonTheme={dragonTheme}
+          setDragonTheme={setDragonTheme}
+          dragonSize={dragonSize}
+          setDragonSize={setDragonSize}
+          dragonSpeed={dragonSpeed}
+          setDragonSpeed={setDragonSpeed}
+          enableFireBreath={enableFireBreath}
+          setEnableFireBreath={setEnableFireBreath}
         />
       </div>
     </>
