@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { dbRun, dbGet } = require('../db');
-const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -47,6 +47,12 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: passwordErr });
     }
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('CRITICAL: JWT_SECRET environment variable is missing.');
+      return res.status(500).json({ error: 'Server authentication configuration error' });
+    }
+
     // Check if email or username exists
     const existingUser = await dbGet(
       'SELECT id FROM users WHERE LOWER(email) = ? OR LOWER(username) = ?',
@@ -64,7 +70,7 @@ router.post('/register', async (req, res) => {
     );
 
     const user = { id: result.id, username: username.trim(), email: email.toLowerCase().trim() };
-    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, {
+    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, jwtSecret, {
       expiresIn: '7d'
     });
 
@@ -93,6 +99,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: emailErr });
     }
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('CRITICAL: JWT_SECRET environment variable is missing.');
+      return res.status(500).json({ error: 'Server authentication configuration error' });
+    }
+
     const user = await dbGet('SELECT * FROM users WHERE LOWER(email) = ?', [email.toLowerCase().trim()]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -104,7 +116,7 @@ router.post('/login', async (req, res) => {
     }
 
     const userData = { id: user.id, username: user.username, email: user.email };
-    const token = jwt.sign(userData, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(userData, jwtSecret, { expiresIn: '7d' });
 
     res.json({
       message: 'Login successful',

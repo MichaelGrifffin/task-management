@@ -104,7 +104,7 @@ PORT=5000
 NODE_ENV=development
 
 # JWT Secret Key for Session Encryption
-JWT_SECRET=super_secret_intern_task_jwt_key_2026
+JWT_SECRET=your_random_secure_jwt_secret_key
 ```
 
 ### Render Deployment Variables
@@ -113,7 +113,7 @@ When hosting on **Render.com**, configure these environment variables:
 | Key | Value | Description |
 | :--- | :--- | :--- |
 | `NODE_ENV` | `production` | Enables production mode |
-| `JWT_SECRET` | `super_secret_intern_task_jwt_key_2026` | Secret key for JWT verification |
+| `JWT_SECRET` | `(Click "Generate" in Render or use a strong random secret)` | Secret key for JWT verification |
 
 ---
 
