@@ -54,30 +54,34 @@ export default function AnimatedBackground({
 
     const handleMouseDown = (e) => {
       mouse.isClicking = true;
-      // Trigger interactive sunbeam shockwave ring on click
+
+      // Spawn interactive sky sunbeam ring on click
       clickRingsRef.current.push({
         x: e.clientX,
         y: e.clientY,
         radius: 5,
-        maxRadius: 180,
+        maxRadius: 200,
         alpha: 1.0,
         color: getGriffinPalette(griffinTheme).featherGlow
       });
 
-      // Burst of glowing golden feather sparks on click
+      // Spawn realistic falling feathers & stardust on click
       if (enableFeatherSparks && (bgAnimMode === 'griffin' || bgAnimMode === 'hybrid')) {
-        for (let i = 0; i < 22; i++) {
+        for (let i = 0; i < 24; i++) {
           const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 7 + 2.5;
+          const speed = Math.random() * 6.5 + 2;
           featherParticlesRef.current.push({
             x: griffin.x,
             y: griffin.y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            size: Math.random() * 5 + 2.5,
+            size: Math.random() * 6 + 3,
+            length: Math.random() * 12 + 8,
+            rotation: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 0.1,
             alpha: 1.0,
-            decay: Math.random() * 0.03 + 0.015,
-            color: Math.random() > 0.5 ? getGriffinPalette(griffinTheme).featherGlow : getGriffinPalette(griffinTheme).beak
+            decay: Math.random() * 0.025 + 0.012,
+            color: Math.random() > 0.4 ? getGriffinPalette(griffinTheme).featherGlow : getGriffinPalette(griffinTheme).eaglePrimary
           });
         }
       }
@@ -98,7 +102,7 @@ export default function AnimatedBackground({
     window.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseleave', handleMouseLeave);
 
-    // Color Palette Definitions for UI Themes
+    // UI Theme Backgrounds
     const getThemeColors = (t) => {
       switch (t) {
         case 'emerald':
@@ -121,65 +125,75 @@ export default function AnimatedBackground({
       }
     };
 
-    // Griffin Element Color Palettes (Eagle Feathers & Lion Fur)
+    // Realistic Griffin Color Palettes
     function getGriffinPalette(gt) {
       switch (gt) {
         case 'silver':
           return {
-            eaglePrimary: '#e2e8f0', // Platinum Eagle feathers
-            eagleSecondary: '#94a3b8',
-            lionBody: '#cbd5e1', // Silver lion fur
-            beak: '#f59e0b', // Golden Beak & Talons
-            eyes: '#38bdf8', // Cyan glowing eagle eyes
+            eaglePrimary: '#f1f5f9',
+            eagleSecondary: '#cbd5e1',
+            lionBody: '#94a3b8',
+            lionShade: '#64748b',
+            beak: '#fbbf24',
+            eyes: '#38bdf8',
             featherGlow: '#7dd3fc',
-            wings: '#f8fafc'
+            wingQuills: '#ffffff',
+            talons: '#e2e8f0'
           };
         case 'crimson':
           return {
-            eaglePrimary: '#ef4444', // Ruby Phoenix Eagle feathers
-            eagleSecondary: '#b91c1c',
-            lionBody: '#f97316', // Golden lion body
-            beak: '#facc15', // Amber Beak
-            eyes: '#fef08a', // Fire yellow eyes
+            eaglePrimary: '#dc2626',
+            eagleSecondary: '#991b1b',
+            lionBody: '#ea580c',
+            lionShade: '#c2410c',
+            beak: '#facc15',
+            eyes: '#fef08a',
             featherGlow: '#f87171',
-            wings: '#dc2626'
+            wingQuills: '#ef4444',
+            talons: '#fbbf24'
           };
         case 'void':
           return {
-            eaglePrimary: '#c084fc', // Cosmic Violet Eagle
-            eagleSecondary: '#7e22ce',
-            lionBody: '#475569', // Dark Slate Lion Body
-            beak: '#38bdf8', // Neon Cyan Beak
-            eyes: '#f0abfc', // Glowing Magenta Eyes
+            eaglePrimary: '#9333ea',
+            eagleSecondary: '#6b21a8',
+            lionBody: '#334155',
+            lionShade: '#1e293b',
+            beak: '#06b6d4',
+            eyes: '#f0abfc',
             featherGlow: '#e879f9',
-            wings: '#a855f7'
+            wingQuills: '#c084fc',
+            talons: '#38bdf8'
           };
         case 'emerald':
           return {
-            eaglePrimary: '#10b981', // Jade Green Eagle Head & Wings
+            eaglePrimary: '#059669',
             eagleSecondary: '#047857',
-            lionBody: '#d97706', // Bronze Lion Body
-            beak: '#fbbf24', // Golden Beak
-            eyes: '#6ee7b7', // Emerald Eyes
-            featherGlow: '#34d399',
-            wings: '#059669'
+            lionBody: '#b45309',
+            lionShade: '#78350f',
+            beak: '#fbbf24',
+            eyes: '#34d399',
+            featherGlow: '#6ee7b7',
+            wingQuills: '#10b981',
+            talons: '#f59e0b'
           };
         case 'golden':
         default:
           return {
-            eaglePrimary: '#fbbf24', // Celestial Golden Eagle
+            eaglePrimary: '#f59e0b',
             eagleSecondary: '#d97706',
-            lionBody: '#eab308', // Warm Amber Lion Body
-            beak: '#f59e0b', // Sharp Gold Beak
-            eyes: '#ef4444', // Crimson Sapphire Eyes
+            lionBody: '#d97706',
+            lionShade: '#92400e',
+            beak: '#fbbf24',
+            eyes: '#ef4444',
             featherGlow: '#fde047',
-            wings: '#f59e0b'
+            wingQuills: '#fef08a',
+            talons: '#fbbf24'
           };
       }
     }
 
     // -------------------------------------------------------------
-    // GRIFFIN PHYSICS & INVERSE KINEMATICS NODES
+    // REALISTIC GRIFFIN STATE & TAIL KINEMATICS
     // -------------------------------------------------------------
     const griffinScale = griffinSize;
     const griffin = {
@@ -188,22 +202,22 @@ export default function AnimatedBackground({
       vx: 0,
       vy: 0,
       angle: 0,
+      rollAngle: 0,
       wingCycle: 0,
-      // Articulated Lion Body & Tail Segments
       tailNodes: []
     };
 
-    const numTailNodes = 8;
+    const numTailNodes = 10;
     for (let i = 0; i < numTailNodes; i++) {
       griffin.tailNodes.push({
-        x: width / 2 - i * 14 * griffinScale,
+        x: width / 2 - i * 12 * griffinScale,
         y: height / 2,
         angle: 0
       });
     }
 
     // Background particle system
-    const numParticles = Math.min(Math.floor(width * 0.045), 55);
+    const numParticles = Math.min(Math.floor(width * 0.045), 50);
     const particles = [];
     for (let i = 0; i < numParticles; i++) {
       particles.push({
@@ -224,30 +238,30 @@ export default function AnimatedBackground({
       const griffinPal = getGriffinPalette(griffinTheme);
       const effectiveBg = bgColor || themePal.bg;
 
-      // 1. Smooth lerp mouse target
+      // Smooth lerp mouse target
       mouse.x += (mouse.targetX - mouse.x) * 0.15;
       mouse.y += (mouse.targetY - mouse.y) * 0.15;
 
       ctx.clearRect(0, 0, width, height);
 
-      // 2. Draw base background fill
+      // Base background fill
       ctx.fillStyle = effectiveBg;
       ctx.fillRect(0, 0, width, height);
 
-      // 3. Radial ambient background glow
-      const g1 = ctx.createRadialGradient(width * 0.3, height * 0.3, 0, width * 0.3, height * 0.3, width * 0.5);
+      // Radial ambient background glow
+      const g1 = ctx.createRadialGradient(width * 0.3, height * 0.3, 0, width * 0.3, height * 0.3, width * 0.55);
       g1.addColorStop(0, themePal.grad1);
       g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = g1;
       ctx.fillRect(0, 0, width, height);
 
-      const g2 = ctx.createRadialGradient(width * 0.7, height * 0.7, 0, width * 0.7, height * 0.7, width * 0.5);
+      const g2 = ctx.createRadialGradient(width * 0.7, height * 0.7, 0, width * 0.7, height * 0.7, width * 0.55);
       g2.addColorStop(0, themePal.grad2);
       g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = g2;
       ctx.fillRect(0, 0, width, height);
 
-      // 4. DRAW PARTICLE MESH (if mode is 'particles' or 'hybrid')
+      // Particle mesh background (if enabled)
       if (bgAnimMode === 'particles' || bgAnimMode === 'hybrid') {
         for (let i = 0; i < particles.length; i++) {
           for (let j = i + 1; j < particles.length; j++) {
@@ -259,7 +273,7 @@ export default function AnimatedBackground({
               ctx.beginPath();
               ctx.moveTo(particles[i].x, particles[i].y);
               ctx.lineTo(particles[j].x, particles[j].y);
-              ctx.strokeStyle = themePal.line.replace('0.3', (0.22 * (1 - dist / 120)).toString());
+              ctx.strokeStyle = themePal.line.replace('0.3', (0.2 * (1 - dist / 120)).toString());
               ctx.lineWidth = 0.7;
               ctx.stroke();
             }
@@ -283,11 +297,11 @@ export default function AnimatedBackground({
         });
       }
 
-      // 5. DRAW SHOCKWAVE CLICK RINGS
+      // Draw click sunbeam shockwave rings
       for (let i = clickRingsRef.current.length - 1; i >= 0; i--) {
         const ring = clickRingsRef.current[i];
-        ring.radius += 7;
-        ring.alpha -= 0.035;
+        ring.radius += 7.5;
+        ring.alpha -= 0.032;
 
         if (ring.alpha <= 0 || ring.radius >= ring.maxRadius) {
           clickRingsRef.current.splice(i, 1);
@@ -298,66 +312,73 @@ export default function AnimatedBackground({
         ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
         ctx.strokeStyle = ring.color;
         ctx.globalAlpha = ring.alpha;
-        ctx.lineWidth = 2.8;
+        ctx.lineWidth = 3;
         ctx.shadowColor = ring.color;
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 20;
         ctx.stroke();
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1.0;
       }
 
-      // 6. UPDATE & RENDER GRIFFIN ANIMATION (if mode is 'griffin' or 'hybrid')
+      // -------------------------------------------------------------
+      // UPDATE & RENDER REALISTIC GRIFFIN BEAST
+      // -------------------------------------------------------------
       if (bgAnimMode === 'griffin' || bgAnimMode === 'hybrid') {
         const dx = mouse.x - griffin.x;
         const dy = mouse.y - griffin.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Steering angle towards target
+        // Steering Heading Angle towards Mouse Cursor
         const targetAngle = Math.atan2(dy, dx);
         let angleDiff = targetAngle - griffin.angle;
 
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-        const turnSpeed = 0.085 * griffinSpeed;
+        const turnSpeed = 0.08 * griffinSpeed;
         griffin.angle += angleDiff * turnSpeed;
 
-        const targetSpeed = Math.min(dist * 0.08, 12) * griffinSpeed;
+        // Dynamic Banking / Roll Angle during turns
+        const targetRoll = Math.max(-0.35, Math.min(0.35, angleDiff * 1.2));
+        griffin.rollAngle += (targetRoll - griffin.rollAngle) * 0.1;
+
+        // Target flight velocity & acceleration
+        const targetSpeed = Math.min(dist * 0.075, 11) * griffinSpeed;
         griffin.vx += (Math.cos(griffin.angle) * targetSpeed - griffin.vx) * 0.12;
         griffin.vy += (Math.sin(griffin.angle) * targetSpeed - griffin.vy) * 0.12;
 
         griffin.x += griffin.vx;
         griffin.y += griffin.vy;
 
-        const velocity = Math.sqrt(griffin.vx * griffin.vx + griffin.vy * griffin.vy);
-        griffin.wingCycle += (0.075 + velocity * 0.015) * griffinSpeed;
+        const flightVelocity = Math.sqrt(griffin.vx * griffin.vx + griffin.vy * griffin.vy);
+        griffin.wingCycle += (0.065 + flightVelocity * 0.014) * griffinSpeed;
 
-        // Spawn golden feather sparks from wingtips & tail tip
+        // Spawn falling golden feathers & stardust while gliding
         if (enableFeatherSparks && (enableCursorFx || mouse.isClicking)) {
-          if (mouse.isClicking || (dist > 70 && Math.random() < 0.4)) {
-            const wingSpan = 75 * griffinScale;
-            // Left wingtip
-            const leftWingX = griffin.x + Math.cos(griffin.angle - Math.PI / 2) * wingSpan;
-            const leftWingY = griffin.y + Math.sin(griffin.angle - Math.PI / 2) * wingSpan;
-            // Tail tip
-            const tailTip = griffin.tailNodes[griffin.tailNodes.length - 1];
+          if (mouse.isClicking || (dist > 60 && Math.random() < 0.35)) {
+            const wingSpan = 85 * griffinScale;
+            const wingX = griffin.x + Math.cos(griffin.angle - Math.PI / 2) * wingSpan * 0.7;
+            const wingY = griffin.y + Math.sin(griffin.angle - Math.PI / 2) * wingSpan * 0.7;
 
             featherParticlesRef.current.push({
-              x: Math.random() > 0.5 ? leftWingX : tailTip.x,
-              y: Math.random() > 0.5 ? leftWingY : tailTip.y,
-              vx: (Math.random() - 0.5) * 2.5,
-              vy: (Math.random() - 0.5) * 2.5,
-              size: Math.random() * 3.5 + 1.5,
+              x: wingX,
+              y: wingY,
+              vx: (Math.random() - 0.5) * 2.2,
+              vy: (Math.random() - 0.5) * 2.2,
+              size: Math.random() * 4 + 2,
+              length: Math.random() * 10 + 6,
+              rotation: Math.random() * Math.PI * 2,
+              vRot: (Math.random() - 0.5) * 0.08,
               alpha: 1.0,
-              decay: Math.random() * 0.04 + 0.02,
+              decay: Math.random() * 0.03 + 0.015,
               color: griffinPal.featherGlow
             });
           }
         }
 
-        // Update Lion Tail Segment Kinematics
-        griffin.tailNodes[0].x = griffin.x - Math.cos(griffin.angle) * 35 * griffinScale;
-        griffin.tailNodes[0].y = griffin.y - Math.sin(griffin.angle) * 35 * griffinScale;
+        // Update Inverse Kinematics Lion Tail
+        griffin.tailNodes[0].x = griffin.x - Math.cos(griffin.angle) * 38 * griffinScale;
+        griffin.tailNodes[0].y = griffin.y - Math.sin(griffin.angle) * 38 * griffinScale;
         griffin.tailNodes[0].angle = griffin.angle;
 
         for (let i = 1; i < griffin.tailNodes.length; i++) {
@@ -367,215 +388,317 @@ export default function AnimatedBackground({
           const segDy = prev.y - curr.y;
           curr.angle = Math.atan2(segDy, segDx);
           const dLen = Math.sqrt(segDx * segDx + segDy * segDy);
-          const targetDist = 12 * griffinScale;
+          const targetDist = 10 * griffinScale;
           if (dLen > 0) {
             curr.x = prev.x - (segDx / dLen) * targetDist;
             curr.y = prev.y - (segDy / dLen) * targetDist;
           }
         }
 
-        // ---------------------------------------------------------
-        // RENDER GRIFFIN COMPONENTS (Tail -> Lion Body -> Eagle Head -> Wings -> Talons)
-        // ---------------------------------------------------------
+        // -------------------------------------------------------------
+        // RENDER REALISTIC GRIFFIN VECTOR GRAPHICS
+        // -------------------------------------------------------------
 
-        // 1. RENDER LION TAIL WITH BUSHY TUFTED TIP
+        // 1. RENDER FLEXIBLE LION TAIL WITH DETAILED BUSHY TUFT
         for (let i = griffin.tailNodes.length - 1; i >= 0; i--) {
           const tNode = griffin.tailNodes[i];
-          const tailWidth = (1 - (i / griffin.tailNodes.length) * 0.6) * 7 * griffinScale;
+          const tRadius = Math.max(2, (1 - (i / griffin.tailNodes.length) * 0.65) * 6 * griffinScale);
 
           ctx.save();
           ctx.translate(tNode.x, tNode.y);
           ctx.rotate(tNode.angle);
 
-          // Lion Tail Segment Circle
+          // Tail Shaft Segment
           ctx.beginPath();
-          ctx.arc(0, 0, Math.max(2, tailWidth), 0, Math.PI * 2);
+          ctx.arc(0, 0, tRadius, 0, Math.PI * 2);
           ctx.fillStyle = griffinPal.lionBody;
           ctx.fill();
 
-          // Bushy Lion Tail Tip Tuft (on last node)
+          // Bushy Lion Tail Tip Tuft (at the end)
           if (i === griffin.tailNodes.length - 1) {
-            ctx.beginPath();
-            ctx.ellipse(-4 * griffinScale, 0, 10 * griffinScale, 6 * griffinScale, 0, 0, Math.PI * 2);
-            ctx.fillStyle = griffinPal.eaglePrimary;
             ctx.shadowColor = griffinPal.featherGlow;
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 14;
+
+            ctx.beginPath();
+            ctx.ellipse(-6 * griffinScale, 0, 14 * griffinScale, 8 * griffinScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = griffinPal.eaglePrimary;
             ctx.fill();
+
+            // Tuft strands
+            ctx.beginPath();
+            ctx.moveTo(-16 * griffinScale, -6 * griffinScale);
+            ctx.lineTo(-24 * griffinScale, -10 * griffinScale);
+            ctx.moveTo(-18 * griffinScale, 0);
+            ctx.lineTo(-26 * griffinScale, 0);
+            ctx.moveTo(-16 * griffinScale, 6 * griffinScale);
+            ctx.lineTo(-24 * griffinScale, 10 * griffinScale);
+            ctx.strokeStyle = griffinPal.eagleSecondary;
+            ctx.lineWidth = 1.8 * griffinScale;
+            ctx.stroke();
+
             ctx.shadowBlur = 0;
           }
-
           ctx.restore();
         }
 
-        // 2. RENDER GRIFFIN MAIN TORSO (Lion Body + Eagle Chest)
+        // MAIN GRIFFIN TORSO & POSE
         ctx.save();
         ctx.translate(griffin.x, griffin.y);
         ctx.rotate(griffin.angle);
+        ctx.rotate(griffin.rollAngle * 0.5); // Add roll banking
 
         ctx.shadowColor = griffinPal.featherGlow;
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 18;
 
-        // Lion Rear Hindquarters
+        // 2. MUSCULAR LION REAR & HIND LEGS
+        // Hind Legs
         ctx.beginPath();
-        ctx.ellipse(-20 * griffinScale, 0, 22 * griffinScale, 18 * griffinScale, 0, 0, Math.PI * 2);
+        ctx.ellipse(-26 * griffinScale, -14 * griffinScale, 12 * griffinScale, 7 * griffinScale, -Math.PI * 0.25, 0, Math.PI * 2);
+        ctx.ellipse(-26 * griffinScale, 14 * griffinScale, 12 * griffinScale, 7 * griffinScale, Math.PI * 0.25, 0, Math.PI * 2);
+        ctx.fillStyle = griffinPal.lionShade;
+        ctx.fill();
+
+        // Lion Muscular Rear Body
+        ctx.beginPath();
+        ctx.ellipse(-18 * griffinScale, 0, 24 * griffinScale, 19 * griffinScale, 0, 0, Math.PI * 2);
         ctx.fillStyle = griffinPal.lionBody;
         ctx.fill();
 
-        // Eagle Front Chest & Shoulders
+        // 3. REGAL EAGLE CHEST & SHOULDERS
         ctx.beginPath();
-        ctx.ellipse(8 * griffinScale, 0, 24 * griffinScale, 20 * griffinScale, 0, 0, Math.PI * 2);
+        ctx.ellipse(10 * griffinScale, 0, 26 * griffinScale, 21 * griffinScale, 0, 0, Math.PI * 2);
         ctx.fillStyle = griffinPal.eaglePrimary;
         ctx.fill();
 
-        // Feathered Chest Texture Arc Lines
-        ctx.beginPath();
-        ctx.arc(10 * griffinScale, -5 * griffinScale, 12 * griffinScale, 0, Math.PI * 0.8);
-        ctx.arc(10 * griffinScale, 5 * griffinScale, 12 * griffinScale, -Math.PI * 0.8, 0);
-        ctx.strokeStyle = griffinPal.eagleSecondary;
-        ctx.lineWidth = 2 * griffinScale;
-        ctx.stroke();
+        // Feathered Hackle Neck Mantle Lines
+        for (let r = 0; r < 4; r++) {
+          ctx.beginPath();
+          ctx.arc(8 * griffinScale - r * 4, 0, (14 - r * 2) * griffinScale, -Math.PI * 0.65, Math.PI * 0.65);
+          ctx.strokeStyle = griffinPal.eagleSecondary;
+          ctx.lineWidth = 2 * griffinScale;
+          ctx.stroke();
+        }
 
         ctx.shadowBlur = 0;
 
-        // 3. RENDER EAGLE FRONT TALON CLAWS
-        const talonReach = (Math.sin(griffin.wingCycle) * 4 + 18) * griffinScale;
-        // Left Talon Claw
-        ctx.beginPath();
-        ctx.moveTo(12 * griffinScale, -14 * griffinScale);
-        ctx.lineTo(24 * griffinScale, -14 * griffinScale - talonReach * 0.4);
-        ctx.lineTo(30 * griffinScale, -18 * griffinScale);
-        ctx.strokeStyle = griffinPal.beak;
-        ctx.lineWidth = 3.5 * griffinScale;
-        ctx.lineCap = 'round';
-        ctx.stroke();
+        // 4. EAGLE FRONT LEGS & SHARP TALONS (Opening towards cursor)
+        const talonReach = (Math.sin(griffin.wingCycle) * 3 + (dist < 180 ? 24 : 16)) * griffinScale;
 
-        // Right Talon Claw
-        ctx.beginPath();
-        ctx.moveTo(12 * griffinScale, 14 * griffinScale);
-        ctx.lineTo(24 * griffinScale, 14 * griffinScale + talonReach * 0.4);
-        ctx.lineTo(30 * griffinScale, 18 * griffinScale);
-        ctx.strokeStyle = griffinPal.beak;
-        ctx.lineWidth = 3.5 * griffinScale;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        // 4. RENDER MAJESTIC FEATHERED EAGLE WINGS
-        const wingFlap = Math.sin(griffin.wingCycle) * 0.42 + 0.15;
-        const wingSpan = (82 + Math.sin(griffin.wingCycle) * 16) * griffinScale;
-
-        // Left Wing
+        // Left Eagle Talon
         ctx.save();
+        ctx.translate(16 * griffinScale, -14 * griffinScale);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(14 * griffinScale, -6 * griffinScale - talonReach * 0.4);
+        ctx.strokeStyle = griffinPal.talons;
+        ctx.lineWidth = 4 * griffinScale;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        // Left Claws (3 toes)
+        ctx.beginPath();
+        ctx.moveTo(14 * griffinScale, -6 * griffinScale - talonReach * 0.4);
+        ctx.lineTo(24 * griffinScale, -12 * griffinScale - talonReach * 0.5);
+        ctx.moveTo(14 * griffinScale, -6 * griffinScale - talonReach * 0.4);
+        ctx.lineTo(26 * griffinScale, -6 * griffinScale - talonReach * 0.4);
+        ctx.moveTo(14 * griffinScale, -6 * griffinScale - talonReach * 0.4);
+        ctx.lineTo(22 * griffinScale, 0 - talonReach * 0.3);
+        ctx.strokeStyle = '#1e293b'; // Sharp obsidian claws
+        ctx.lineWidth = 2.5 * griffinScale;
+        ctx.stroke();
+        ctx.restore();
+
+        // Right Eagle Talon
+        ctx.save();
+        ctx.translate(16 * griffinScale, 14 * griffinScale);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(14 * griffinScale, 6 * griffinScale + talonReach * 0.4);
+        ctx.strokeStyle = griffinPal.talons;
+        ctx.lineWidth = 4 * griffinScale;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        // Right Claws
+        ctx.beginPath();
+        ctx.moveTo(14 * griffinScale, 6 * griffinScale + talonReach * 0.4);
+        ctx.lineTo(24 * griffinScale, 12 * griffinScale + talonReach * 0.5);
+        ctx.moveTo(14 * griffinScale, 6 * griffinScale + talonReach * 0.4);
+        ctx.lineTo(26 * griffinScale, 6 * griffinScale + talonReach * 0.4);
+        ctx.moveTo(14 * griffinScale, 6 * griffinScale + talonReach * 0.4);
+        ctx.lineTo(22 * griffinScale, 0 + talonReach * 0.3);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.5 * griffinScale;
+        ctx.stroke();
+        ctx.restore();
+
+        // 5. LAYERED REALISTIC EAGLE WINGS (3 Ranks: Primary, Secondary, Shoulder)
+        const wingFlap = Math.sin(griffin.wingCycle) * 0.48 + 0.1;
+        const wingSpan = (90 + Math.sin(griffin.wingCycle) * 18) * griffinScale;
+
+        // LEFT WING
+        ctx.save();
+        ctx.translate(4 * griffinScale, -12 * griffinScale);
         ctx.rotate(-wingFlap - Math.PI / 2);
         ctx.shadowColor = griffinPal.featherGlow;
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 20;
 
-        // Main Wing Blade Shape
+        // Shoulder Covert Base
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(-wingSpan * 0.65, -wingSpan * 0.45, -wingSpan, -wingSpan * 0.12);
-        ctx.quadraticCurveTo(-wingSpan * 0.45, wingSpan * 0.35, 0, 0);
-        ctx.fillStyle = griffinPal.wings;
-        ctx.globalAlpha = 0.9;
+        ctx.ellipse(-20 * griffinScale, 0, 24 * griffinScale, 16 * griffinScale, -0.3, 0, Math.PI * 2);
+        ctx.fillStyle = griffinPal.eagleSecondary;
         ctx.fill();
 
-        // Layered Primary Eagle Feather Lines
-        for (let f = 1; f <= 5; f++) {
+        // Mid-wing Secondary Coverts
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(-wingSpan * 0.4, -wingSpan * 0.3, -wingSpan * 0.65, -wingSpan * 0.08);
+        ctx.quadraticCurveTo(-wingSpan * 0.35, wingSpan * 0.25, 0, 0);
+        ctx.fillStyle = griffinPal.eaglePrimary;
+        ctx.fill();
+
+        // Primary Outer Flight Feathers (7 individual quills fanning out)
+        for (let q = 0; q < 7; q++) {
+          const qAngle = -0.2 + (q / 6) * 0.4;
+          const qLen = wingSpan * (1.0 - (q / 6) * 0.22);
+          ctx.save();
+          ctx.rotate(qAngle);
+
           ctx.beginPath();
-          ctx.moveTo(-wingSpan * 0.15 * f, 0);
-          ctx.lineTo(-wingSpan * 0.18 * f - 10, -wingSpan * 0.2);
+          ctx.moveTo(0, 0);
+          ctx.quadraticCurveTo(-qLen * 0.5, -12, -qLen, -4);
+          ctx.quadraticCurveTo(-qLen * 0.5, 6, 0, 0);
+          ctx.fillStyle = q % 2 === 0 ? griffinPal.wingQuills : griffinPal.eaglePrimary;
           ctx.strokeStyle = griffinPal.eagleSecondary;
-          ctx.lineWidth = 1.8 * griffinScale;
+          ctx.lineWidth = 1.2 * griffinScale;
+          ctx.fill();
           ctx.stroke();
+
+          ctx.restore();
         }
         ctx.restore();
 
-        // Right Wing
+        // RIGHT WING
         ctx.save();
+        ctx.translate(4 * griffinScale, 12 * griffinScale);
         ctx.rotate(wingFlap + Math.PI / 2);
         ctx.shadowColor = griffinPal.featherGlow;
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 20;
 
+        // Shoulder Covert Base
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(wingSpan * 0.65, -wingSpan * 0.45, wingSpan, -wingSpan * 0.12);
-        ctx.quadraticCurveTo(wingSpan * 0.45, wingSpan * 0.35, 0, 0);
-        ctx.fillStyle = griffinPal.wings;
-        ctx.globalAlpha = 0.9;
+        ctx.ellipse(20 * griffinScale, 0, 24 * griffinScale, 16 * griffinScale, 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = griffinPal.eagleSecondary;
         ctx.fill();
 
-        for (let f = 1; f <= 5; f++) {
+        // Mid-wing Secondary Coverts
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(wingSpan * 0.4, -wingSpan * 0.3, wingSpan * 0.65, -wingSpan * 0.08);
+        ctx.quadraticCurveTo(wingSpan * 0.35, wingSpan * 0.25, 0, 0);
+        ctx.fillStyle = griffinPal.eaglePrimary;
+        ctx.fill();
+
+        // Primary Outer Flight Feathers
+        for (let q = 0; q < 7; q++) {
+          const qAngle = 0.2 - (q / 6) * 0.4;
+          const qLen = wingSpan * (1.0 - (q / 6) * 0.22);
+          ctx.save();
+          ctx.rotate(qAngle);
+
           ctx.beginPath();
-          ctx.moveTo(wingSpan * 0.15 * f, 0);
-          ctx.lineTo(wingSpan * 0.18 * f + 10, -wingSpan * 0.2);
+          ctx.moveTo(0, 0);
+          ctx.quadraticCurveTo(qLen * 0.5, -12, qLen, -4);
+          ctx.quadraticCurveTo(qLen * 0.5, 6, 0, 0);
+          ctx.fillStyle = q % 2 === 0 ? griffinPal.wingQuills : griffinPal.eaglePrimary;
           ctx.strokeStyle = griffinPal.eagleSecondary;
-          ctx.lineWidth = 1.8 * griffinScale;
+          ctx.lineWidth = 1.2 * griffinScale;
+          ctx.fill();
           ctx.stroke();
+
+          ctx.restore();
         }
         ctx.restore();
 
-        // 5. RENDER REGAL EAGLE HEAD & SHARP BEAK
+        // 6. NOBLE EAGLE HEAD & HOOKED METALLIC BEAK
         ctx.save();
-        ctx.translate(22 * griffinScale, 0);
+        ctx.translate(26 * griffinScale, 0);
 
         ctx.shadowColor = griffinPal.featherGlow;
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 22;
 
-        // Feathered Head Crest / Crown
-        ctx.beginPath();
-        ctx.moveTo(-10 * griffinScale, -12 * griffinScale);
-        ctx.lineTo(-24 * griffinScale, -16 * griffinScale);
-        ctx.lineTo(-6 * griffinScale, -4 * griffinScale);
-        ctx.fillStyle = griffinPal.eagleSecondary;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(-10 * griffinScale, 12 * griffinScale);
-        ctx.lineTo(-24 * griffinScale, 16 * griffinScale);
-        ctx.lineTo(-6 * griffinScale, 4 * griffinScale);
-        ctx.fillStyle = griffinPal.eagleSecondary;
-        ctx.fill();
+        // Crown Feather Crests (Windblown)
+        for (let c = 0; c < 4; c++) {
+          ctx.beginPath();
+          ctx.moveTo(-12 * griffinScale, (-8 + c * 5) * griffinScale);
+          ctx.quadraticCurveTo(-26 * griffinScale, (-14 + c * 8) * griffinScale, -32 * griffinScale, (-18 + c * 10) * griffinScale);
+          ctx.lineTo(-10 * griffinScale, (-4 + c * 4) * griffinScale);
+          ctx.fillStyle = griffinPal.eagleSecondary;
+          ctx.fill();
+        }
 
         // Eagle Head Contour
         ctx.beginPath();
-        ctx.moveTo(-12 * griffinScale, -14 * griffinScale);
-        ctx.lineTo(16 * griffinScale, -10 * griffinScale);
-        ctx.lineTo(24 * griffinScale, 0);
-        ctx.lineTo(16 * griffinScale, 10 * griffinScale);
-        ctx.lineTo(-12 * griffinScale, 14 * griffinScale);
+        ctx.moveTo(-14 * griffinScale, -15 * griffinScale);
+        ctx.quadraticCurveTo(10 * griffinScale, -16 * griffinScale, 20 * griffinScale, -10 * griffinScale);
+        ctx.lineTo(28 * griffinScale, 0);
+        ctx.lineTo(20 * griffinScale, 10 * griffinScale);
+        ctx.quadraticCurveTo(10 * griffinScale, 16 * griffinScale, -14 * griffinScale, 15 * griffinScale);
         ctx.closePath();
         ctx.fillStyle = griffinPal.eaglePrimary;
         ctx.fill();
 
-        // Sharp Hooked Eagle Beak
+        // Hooked Eagle Beak (Upper & Lower Mandibles)
         ctx.beginPath();
-        ctx.moveTo(14 * griffinScale, -8 * griffinScale);
-        ctx.lineTo(34 * griffinScale, -2 * griffinScale);
-        ctx.quadraticCurveTo(36 * griffinScale, 10 * griffinScale, 20 * griffinScale, 8 * griffinScale);
+        ctx.moveTo(18 * griffinScale, -10 * griffinScale);
+        ctx.lineTo(38 * griffinScale, -4 * griffinScale);
+        ctx.quadraticCurveTo(42 * griffinScale, 12 * griffinScale, 22 * griffinScale, 9 * griffinScale);
         ctx.closePath();
-        ctx.fillStyle = griffinPal.beak;
+
+        const beakGrad = ctx.createLinearGradient(18, 0, 42, 0);
+        beakGrad.addColorStop(0, griffinPal.beak);
+        beakGrad.addColorStop(1, '#d97706');
+        ctx.fillStyle = beakGrad;
         ctx.shadowColor = griffinPal.beak;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
         ctx.fill();
 
-        // Glowing Eagle Eyes
+        // Nostril Slit
         ctx.beginPath();
-        ctx.arc(8 * griffinScale, -6 * griffinScale, 4 * griffinScale, 0, Math.PI * 2);
-        ctx.arc(8 * griffinScale, 6 * griffinScale, 4 * griffinScale, 0, Math.PI * 2);
+        ctx.ellipse(25 * griffinScale, -3 * griffinScale, 2.5 * griffinScale, 1 * griffinScale, -0.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#78350f';
+        ctx.fill();
+
+        // Glowing Fierce Eagle Eye
+        ctx.beginPath();
+        ctx.arc(10 * griffinScale, -7 * griffinScale, 4.5 * griffinScale, 0, Math.PI * 2);
         ctx.fillStyle = griffinPal.eyes;
         ctx.shadowColor = griffinPal.eyes;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
         ctx.fill();
-        ctx.shadowBlur = 0;
 
-        ctx.restore(); // Head
-        ctx.restore(); // Main Torso Body
+        // Eagle Eye Pupil & Reflection Dot
+        ctx.beginPath();
+        ctx.arc(11 * griffinScale, -7 * griffinScale, 2 * griffinScale, 0, Math.PI * 2);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(12 * griffinScale, -8 * griffinScale, 0.8 * griffinScale, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.restore(); // Eagle Head
+        ctx.restore(); // Main Griffin Pose
       }
 
-      // 7. RENDER STARDUST & FEATHER SPARK PARTICLES
+      // RENDER FALLING FEATHERS & STARDUST PARTICLES
       for (let i = featherParticlesRef.current.length - 1; i >= 0; i--) {
         const p = featherParticlesRef.current[i];
         p.x += p.vx;
         p.y += p.vy;
+        p.rotation += p.vRot;
         p.alpha -= p.decay;
 
         if (p.alpha <= 0) {
@@ -583,15 +706,32 @@ export default function AnimatedBackground({
           continue;
         }
 
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+
+        // Realistic Feather Shape
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.moveTo(0, -p.length / 2);
+        ctx.quadraticCurveTo(p.size, 0, 0, p.length / 2);
+        ctx.quadraticCurveTo(-p.size, 0, 0, -p.length / 2);
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.alpha;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 8;
         ctx.fill();
+
+        // Feather Shaft Line
+        ctx.beginPath();
+        ctx.moveTo(0, -p.length / 2);
+        ctx.lineTo(0, p.length / 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1.0;
+        ctx.restore();
       }
 
       animationFrameId = requestAnimationFrame(draw);
