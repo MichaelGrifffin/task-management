@@ -10,7 +10,9 @@ import {
   LogOut, 
   User, 
   Wifi, 
-  WifiOff 
+  WifiOff,
+  X,
+  Sparkles
 } from 'lucide-react';
 
 export default function Navbar({
@@ -32,29 +34,42 @@ export default function Navbar({
   setTheme
 }) {
   return (
-    <header className="glass-panel navbar">
+    <header className="glass-panel navbar animate-fade">
       <div className="nav-container">
         {/* Brand Logo & Name */}
-        <div className="nav-brand">
-          <div className="logo-icon">
-            <CheckSquare size={22} color="#ffffff" />
+        <div className="nav-brand" onClick={() => window.location.reload()} title="TaskMaster PRO Dashboard" style={{ cursor: 'pointer' }}>
+          <div className="logo-icon-wrapper">
+            <CheckSquare size={22} color="#ffffff" className="logo-svg" />
+            <Sparkles size={12} color="var(--primary)" className="logo-sparkle" />
           </div>
-          <span className="brand-name">TaskMaster<span className="brand-badge">PRO</span></span>
+          <div className="brand-text-wrapper">
+            <span className="brand-name">TaskMaster</span>
+            <span className="brand-badge">PRO</span>
+          </div>
         </div>
 
-        {/* Search & Filtering Bar (Only visible when logged in) */}
+        {/* Search & Filtering Bar (Visible when user is logged in) */}
         {user && (
           <div className="nav-search-bar">
             {/* Search Input */}
             <div className="search-input-wrapper">
-              <Search size={16} className="search-icon" />
+              <Search size={15} className="search-icon" />
               <input
                 type="text"
-                placeholder="Search tasks by title..."
+                placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
               />
+              {searchQuery && (
+                <button 
+                  className="search-clear-btn" 
+                  onClick={() => setSearchQuery('')}
+                  title="Clear search"
+                >
+                  <X size={13} />
+                </button>
+              )}
             </div>
 
             {/* Filter Dropdown: Status */}
@@ -62,11 +77,12 @@ export default function Navbar({
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="filter-select"
+              title="Filter by Status"
             >
               <option value="all">All Status</option>
               <option value="todo">To Do</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Completed</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
             </select>
 
             {/* Filter Dropdown: Priority */}
@@ -74,6 +90,7 @@ export default function Navbar({
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="filter-select"
+              title="Filter by Priority"
             >
               <option value="all">All Priority</option>
               <option value="urgent">Urgent</option>
@@ -91,23 +108,25 @@ export default function Navbar({
               {/* View Switcher: Kanban vs List */}
               <div className="view-toggle-group">
                 <button
-                  className={`btn-icon ${activeView === 'kanban' ? 'active' : ''}`}
+                  className={`view-btn ${activeView === 'kanban' ? 'active' : ''}`}
                   onClick={() => setActiveView('kanban')}
                   title="Kanban Board View"
                 >
-                  <LayoutGrid size={18} />
+                  <LayoutGrid size={15} />
+                  <span className="view-btn-text">Board</span>
                 </button>
                 <button
-                  className={`btn-icon ${activeView === 'list' ? 'active' : ''}`}
+                  className={`view-btn ${activeView === 'list' ? 'active' : ''}`}
                   onClick={() => setActiveView('list')}
                   title="List View"
                 >
-                  <List size={18} />
+                  <List size={15} />
+                  <span className="view-btn-text">List</span>
                 </button>
               </div>
 
               {/* Add New Task Button */}
-              <button className="btn btn-primary" onClick={onOpenNewTask}>
+              <button className="btn btn-primary nav-task-btn" onClick={onOpenNewTask}>
                 <Plus size={16} />
                 <span>New Task</span>
               </button>
@@ -115,14 +134,15 @@ export default function Navbar({
           )}
 
           {/* Theme & Background Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="nav-ctrl-group">
             {/* Quick Theme Selector Dropdown */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-surface)', padding: '4px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <div className="theme-select-wrapper">
               <Palette size={14} color="var(--primary)" />
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
-                style={{ background: 'transparent', color: 'var(--text-main)', border: 'none', fontSize: '0.78rem', fontWeight: 600, outline: 'none', cursor: 'pointer' }}
+                className="theme-quick-select"
+                title="Switch Visual Theme"
               >
                 <option value="midnight" style={{ background: '#0b0f19', color: '#818cf8' }}>Midnight</option>
                 <option value="emerald" style={{ background: '#06120e', color: '#34d399' }}>Emerald</option>
@@ -135,44 +155,35 @@ export default function Navbar({
               </select>
             </div>
 
-            {/* Interactive Customizable Background & Flower FX Button */}
+            {/* Interactive Background & Flower FX Button */}
             <button
-              className="btn btn-primary"
+              className="btn btn-fx-trigger"
               onClick={onOpenThemeModal}
-              title="Customize Cursor Flower Animation, Petals & Background FX"
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'var(--gradient-primary)',
-                boxShadow: '0 0 14px rgba(99, 102, 241, 0.4)'
-              }}
+              title="Customize Flowers, Petals & Background Animations"
             >
-              <Flower size={15} color="#ffffff" style={{ filter: 'drop-shadow(0 0 4px #ec4899)' }} />
-              <span className="nav-theme-label" style={{ fontWeight: 700 }}>Flowers & FX</span>
+              <Flower size={15} className="flower-icon-glow" />
+              <span className="nav-fx-label">Flowers & FX</span>
             </button>
 
             {/* Live WS Status Dot */}
-            <div className="ws-indicator" style={{ padding: '4px 10px' }} title={wsConnected ? 'WebSocket Connected' : 'Offline'}>
+            <div className="ws-indicator" title={wsConnected ? 'WebSocket Real-time Sync Active' : 'WebSocket Reconnecting...'}>
               <span className={`dot ${wsConnected ? 'dot-connected' : ''}`}></span>
               {wsConnected ? <Wifi size={12} color="#10b981" /> : <WifiOff size={12} color="#ef4444" />}
             </div>
 
-            {/* User Auth / Logout */}
+            {/* User Auth / Profile Badge */}
             {user ? (
               <div className="user-profile-badge">
                 <div className="avatar">
-                  <User size={14} color="var(--primary)" />
+                  <User size={13} color="#ffffff" />
                 </div>
                 <span className="username">{user.username}</span>
-                <button className="btn-icon logout-btn" onClick={onLogout} title="Logout">
-                  <LogOut size={16} />
+                <button className="btn-icon logout-btn" onClick={onLogout} title="Logout of Account">
+                  <LogOut size={15} />
                 </button>
               </div>
             ) : (
-              <button className="btn btn-secondary" onClick={onOpenAuth}>
+              <button className="btn btn-secondary nav-signin-btn" onClick={onOpenAuth}>
                 Sign In
               </button>
             )}
@@ -182,3 +193,4 @@ export default function Navbar({
     </header>
   );
 }
+

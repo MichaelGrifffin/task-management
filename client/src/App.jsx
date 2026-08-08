@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import DashboardStats from './components/DashboardStats';
 import KanbanBoard from './components/KanbanBoard';
@@ -198,8 +198,9 @@ export default function App() {
 
   const handleSaveTask = async (taskData) => {
     try {
-      const url = taskToEdit ? `/api/tasks/${taskToEdit._id}` : '/api/tasks';
-      const method = taskToEdit ? 'PUT' : 'POST';
+      const editId = taskToEdit ? (taskToEdit.id || taskToEdit._id) : null;
+      const url = editId ? `/api/tasks/${editId}` : '/api/tasks';
+      const method = editId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
@@ -221,7 +222,7 @@ export default function App() {
 
   const handleMoveTask = async (taskId, newStatus) => {
     setTasks((prev) =>
-      prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t))
+      prev.map((t) => ((t.id || t._id) === taskId || String(t.id || t._id) === String(taskId) ? { ...t, status: newStatus } : t))
     );
 
     try {
@@ -244,7 +245,7 @@ export default function App() {
   };
 
   const handleDeleteTask = async (taskId) => {
-    setTasks((prev) => prev.filter((t) => t._id !== taskId));
+    setTasks((prev) => prev.filter((t) => (t.id || t._id) !== taskId && String(t.id || t._id) !== String(taskId)));
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'DELETE',
