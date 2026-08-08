@@ -4,10 +4,15 @@ export default function AnimatedBackground({
   theme = 'midnight',
   bgColor = null,
   enableCursorFx = true,
-  bgAnimMode = 'particles' // 'particles' | 'none'
+  bgAnimMode = 'griffin', // 'griffin' | 'particles' | 'hybrid'
+  griffinTheme = 'golden', // 'golden' | 'silver' | 'crimson' | 'void' | 'emerald'
+  griffinSize = 1.0, // 0.7 to 1.5 multiplier
+  griffinSpeed = 1.0, // 0.6 to 1.8 multiplier
+  enableFeatherSparks = true
 }) {
   const canvasRef = useRef(null);
   const clickRingsRef = useRef([]);
+  const featherParticlesRef = useRef([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,7 +28,17 @@ export default function AnimatedBackground({
       x: width / 2,
       y: height / 2,
       targetX: width / 2,
-      targetY: height / 2
+      targetY: height / 2,
+      active: false,
+      isClicking: false
+    };
+
+    const griffin = {
+      x: width / 2,
+      y: height / 2,
+      vx: 0,
+      vy: 0,
+      angle: 0
     };
 
     const handleResize = () => {
@@ -34,24 +49,70 @@ export default function AnimatedBackground({
     const handleMouseMove = (e) => {
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
+      mouse.active = true;
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches && e.touches[0]) {
+        mouse.targetX = e.touches[0].clientX;
+        mouse.targetY = e.touches[0].clientY;
+        mouse.active = true;
+      }
     };
 
     const handleMouseDown = (e) => {
-      if (!enableCursorFx) return;
-      clickRingsRef.current.push({
-        x: e.clientX,
-        y: e.clientY,
-        radius: 5,
-        maxRadius: 180,
-        alpha: 1.0
-      });
+      mouse.isClicking = true;
+
+      // Spawn interactive sky sunbeam ring on click
+      if (enableCursorFx) {
+        clickRingsRef.current.push({
+          x: e.clientX,
+          y: e.clientY,
+          radius: 5,
+          maxRadius: 200,
+          alpha: 1.0,
+          color: getGriffinPalette(griffinTheme).featherGlow
+        });
+      }
+
+      // Spawn glowing feather particles on click
+      if (enableFeatherSparks) {
+        for (let i = 0; i < 22; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 6.5 + 2;
+          featherParticlesRef.current.push({
+            x: mouse.targetX,
+            y: mouse.targetY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: Math.random() * 5 + 2,
+            length: Math.random() * 12 + 6,
+            rotation: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 0.1,
+            alpha: 1.0,
+            decay: Math.random() * 0.025 + 0.012,
+            color: Math.random() > 0.4 ? getGriffinPalette(griffinTheme).featherGlow : getGriffinPalette(griffinTheme).eaglePrimary
+          });
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      mouse.isClicking = false;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.active = false;
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove);
     window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mouseleave', handleMouseLeave);
 
-    // UI Theme Color Definitions
+    // UI Theme Backgrounds
     const getThemeColors = (t) => {
       switch (t) {
         case 'emerald':
@@ -74,8 +135,8 @@ export default function AnimatedBackground({
       }
     };
 
-    // Particle Mesh Grid System
-    const numParticles = Math.min(Math.floor(width * 0.045), 55);
+    // Background particle system
+    const numParticles = Math.min(Math.floor(width * 0.045), 50);
     const particles = [];
     for (let i = 0; i < numParticles; i++) {
       particles.push({
@@ -91,6 +152,7 @@ export default function AnimatedBackground({
     // MAIN CANVAS RENDER LOOP
     const draw = () => {
       const themePal = getThemeColors(theme);
+      const griffinPal = getGriffinPalette(griffinTheme);
       const effectiveBg = bgColor || themePal.bg;
 
       mouse.x += (mouse.targetX - mouse.x) * 0.15;
@@ -102,7 +164,7 @@ export default function AnimatedBackground({
       ctx.fillStyle = effectiveBg;
       ctx.fillRect(0, 0, width, height);
 
-      // Radial ambient background glow
+      // Radial ambient background glows
       const g1 = ctx.createRadialGradient(width * 0.3, height * 0.3, 0, width * 0.3, height * 0.3, width * 0.55);
       g1.addColorStop(0, themePal.grad1);
       g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -116,42 +178,40 @@ export default function AnimatedBackground({
       ctx.fillRect(0, 0, width, height);
 
       // Particle mesh background
-      if (bgAnimMode !== 'none') {
-        for (let i = 0; i < particles.length; i++) {
-          for (let j = i + 1; j < particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 120) {
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
-              ctx.strokeStyle = themePal.line.replace('0.3', (0.2 * (1 - dist / 120)).toString());
-              ctx.lineWidth = 0.7;
-              ctx.stroke();
-            }
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = themePal.line.replace('0.3', (0.2 * (1 - dist / 120)).toString());
+            ctx.lineWidth = 0.7;
+            ctx.stroke();
           }
         }
-
-        particles.forEach((p) => {
-          p.x += p.vx;
-          p.y += p.vy;
-
-          if (p.x < 0 || p.x > width) p.vx *= -1;
-          if (p.y < 0 || p.y > height) p.vy *= -1;
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = themePal.particle;
-          ctx.shadowColor = themePal.glow;
-          ctx.shadowBlur = 8;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        });
       }
 
-      // Draw click shockwaves
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = themePal.particle;
+        ctx.shadowColor = themePal.glow;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Draw click sunbeam shockwaves
       for (let i = clickRingsRef.current.length - 1; i >= 0; i--) {
         const ring = clickRingsRef.current[i];
         ring.radius += 7.5;
@@ -164,13 +224,78 @@ export default function AnimatedBackground({
 
         ctx.beginPath();
         ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = themePal.glow;
+        ctx.strokeStyle = ring.color || themePal.glow;
         ctx.globalAlpha = ring.alpha;
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.stroke();
         ctx.globalAlpha = 1.0;
       }
 
+      // Cursor position physics update
+      const dx = mouse.x - griffin.x;
+      const dy = mouse.y - griffin.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const targetAngle = Math.atan2(dy, dx);
+      griffin.angle += (targetAngle - griffin.angle) * 0.08 * griffinSpeed;
+      griffin.x += (Math.cos(griffin.angle) * Math.min(dist * 0.075, 11) - griffin.vx) * 0.12;
+      griffin.y += (Math.sin(griffin.angle) * Math.min(dist * 0.075, 11) - griffin.vy) * 0.12;
+
+      // Spawn gliding feather particles near cursor
+      if (enableFeatherSparks && (enableCursorFx || mouse.isClicking)) {
+        if (mouse.isClicking || (dist > 60 && Math.random() < 0.25)) {
+          featherParticlesRef.current.push({
+            x: mouse.x + (Math.random() - 0.5) * 40,
+            y: mouse.y + (Math.random() - 0.5) * 40,
+            vx: (Math.random() - 0.5) * 2.2,
+            vy: (Math.random() - 0.5) * 2.2,
+            size: Math.random() * 4 + 2,
+            length: Math.random() * 10 + 6,
+            rotation: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 0.08,
+            alpha: 1.0,
+            decay: Math.random() * 0.03 + 0.015,
+            color: griffinPal.featherGlow
+          });
+        }
+      }
+
+      // Draw Falling Feathers
+      for (let i = featherParticlesRef.current.length - 1; i >= 0; i--) {
+        const p = featherParticlesRef.current[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.vRot;
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0) {
+          featherParticlesRef.current.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+
+        ctx.beginPath();
+        ctx.moveTo(0, -p.length / 2);
+        ctx.quadraticCurveTo(p.size, 0, 0, p.length / 2);
+        ctx.quadraticCurveTo(-p.size, 0, 0, -p.length / 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, -p.length / 2);
+        ctx.lineTo(0, p.length / 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        ctx.globalAlpha = 1.0;
+        ctx.restore();
+      }
+
+      // NOTE: NO Griffin creature beast is rendered on canvas. Only clean canvas particle background.
       animationFrameId = requestAnimationFrame(draw);
     };
 
@@ -179,10 +304,22 @@ export default function AnimatedBackground({
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [theme, bgColor, enableCursorFx, bgAnimMode]);
+  }, [
+    theme,
+    bgColor,
+    enableCursorFx,
+    bgAnimMode,
+    griffinTheme,
+    griffinSize,
+    griffinSpeed,
+    enableFeatherSparks
+  ]);
 
   return (
     <canvas
@@ -198,4 +335,71 @@ export default function AnimatedBackground({
       }}
     />
   );
+}
+
+// Color Palettes
+function getGriffinPalette(gt) {
+  switch (gt) {
+    case 'silver':
+      return {
+        eaglePrimary: '#f1f5f9',
+        eagleSecondary: '#cbd5e1',
+        lionBody: '#94a3b8',
+        lionShade: '#64748b',
+        beak: '#fbbf24',
+        eyes: '#38bdf8',
+        featherGlow: '#7dd3fc',
+        wingQuills: '#ffffff',
+        talons: '#e2e8f0'
+      };
+    case 'crimson':
+      return {
+        eaglePrimary: '#dc2626',
+        eagleSecondary: '#991b1b',
+        lionBody: '#ea580c',
+        lionShade: '#c2410c',
+        beak: '#facc15',
+        eyes: '#fef08a',
+        featherGlow: '#f87171',
+        wingQuills: '#ef4444',
+        talons: '#fbbf24'
+      };
+    case 'void':
+      return {
+        eaglePrimary: '#9333ea',
+        eagleSecondary: '#6b21a8',
+        lionBody: '#334155',
+        lionShade: '#1e293b',
+        beak: '#06b6d4',
+        eyes: '#f0abfc',
+        featherGlow: '#e879f9',
+        wingQuills: '#c084fc',
+        talons: '#38bdf8'
+      };
+    case 'emerald':
+      return {
+        eaglePrimary: '#059669',
+        eagleSecondary: '#047857',
+        lionBody: '#b45309',
+        lionShade: '#78350f',
+        beak: '#fbbf24',
+        eyes: '#34d399',
+        featherGlow: '#6ee7b7',
+        wingQuills: '#10b981',
+        talons: '#f59e0b'
+      };
+    case 'golden':
+    default:
+      return {
+        eaglePrimary: '#f59e0b',
+        eagleSecondary: '#d97706',
+        lionBody: '#d97706',
+        lionShade: '#92400e',
+        beak: '#fbbf24',
+        eyes: '#ef4444',
+        featherGlow: '#fde047',
+        wingQuills: '#fef08a',
+        talons: '#fbbf24'
+      };
+  }
 }

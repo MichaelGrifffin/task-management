@@ -96,11 +96,11 @@ export default function Navbar({
               </select>
             </div>
 
-            {/* Interactive Customizable Background FX Button */}
+            {/* Interactive Customizable Background & Griffin FX Button */}
             <button
               className="btn btn-primary"
               onClick={onOpenThemeModal}
-              title="Customize Background Effects & Themes"
+              title="Customize Griffin Animation, Feathers & Background FX"
               style={{
                 padding: '6px 14px',
                 fontSize: '0.8rem',
@@ -111,8 +111,8 @@ export default function Navbar({
                 boxShadow: '0 0 14px rgba(99, 102, 241, 0.4)'
               }}
             >
-              <Sparkles size={15} color="#ffffff" />
-              <span className="nav-theme-label" style={{ fontWeight: 700 }}>Background & FX</span>
+              <Feather size={15} color="#ffffff" style={{ filter: 'drop-shadow(0 0 4px #fbbf24)' }} />
+              <span className="nav-theme-label" style={{ fontWeight: 700 }}>Griffin & FX</span>
             </button>
 
             {/* Live WS Status Dot */}

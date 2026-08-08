@@ -22,7 +22,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   
-  // Theme & Background Customizer State
+  // Theme & Background Griffin State
   const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'midnight');
   const [bgColorMode, setBgColorMode] = useState(localStorage.getItem('app-bg-mode') || 'theme');
   const [customBgColor, setCustomBgColor] = useState(localStorage.getItem('app-custom-bg') || '#0b0f19');
@@ -33,8 +33,25 @@ export default function App() {
     localStorage.getItem('app-cursor-ring') !== 'false'
   );
 
-  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'particles');
+  // Griffin Customizer State
+  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'griffin');
+  const [griffinTheme, setGriffinTheme] = useState(localStorage.getItem('app-griffin-theme') || 'golden');
+  const [griffinSize, setGriffinSize] = useState(
+    parseFloat(localStorage.getItem('app-griffin-size')) || 1.0
+  );
+  const [griffinSpeed, setGriffinSpeed] = useState(
+    parseFloat(localStorage.getItem('app-griffin-speed')) || 1.0
+  );
+  const [enableFeatherSparks, setEnableFeatherSparks] = useState(
+    localStorage.getItem('app-feather-sparks') !== 'false'
+  );
+
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
+  const [defaultTaskStatus, setDefaultTaskStatus] = useState('todo');
+  const [wsConnected, setWsConnected] = useState(false);
 
   // Determine effective background color
   const getEffectiveBgColor = () => {
@@ -94,125 +111,96 @@ export default function App() {
     localStorage.setItem('app-feather-sparks', enableFeatherSparks.toString());
   }, [enableFeatherSparks]);
 
-  // Check auth user on mount
+  // Auth User Check
   useEffect(() => {
     if (token) {
-      fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.user) {
-            setUser(data.user);
-          } else {
-            logout();
-          }
-        })
-        .catch(() => logout());
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUser({ id: payload.id, username: payload.username, email: payload.email });
+      } catch (err) {
+        console.error('Invalid token', err);
+        logout();
+      }
     }
   }, [token]);
 
-  // Fetch tasks API
+  // Fetch Tasks API
   const fetchTasks = useCallback(async () => {
-    if (!token) {
-      setTasks([]);
-      return;
-    }
-
+    if (!token) return;
     setLoadingTasks(true);
-
-    let url = `/api/tasks?status=${statusFilter}&priority=${priorityFilter}`;
-    if (searchQuery.trim()) {
-      url += `&search=${encodeURIComponent(searchQuery.trim())}`;
-    }
-
     try {
-      const res = await fetch(url, {
+      const res = await fetch('/api/tasks', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
-        setTasks(data.tasks || []);
+        setTasks(data);
+      } else if (res.status === 401) {
+        logout();
       }
     } catch (err) {
-      console.error('Failed to fetch tasks:', err);
+      console.error('Error fetching tasks:', err);
     } finally {
       setLoadingTasks(false);
     }
-  }, [token, statusFilter, priorityFilter, searchQuery]);
+  }, [token]);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    if (user) {
+      fetchTasks();
+    }
+  }, [user, fetchTasks]);
 
-  // WebSocket Live Synchronization
-  const [wsConnected, setWsConnected] = useState(false);
-
+  // WebSocket Connection
   useEffect(() => {
-    const isDev = window.location.port === '3000';
+    if (!user || !token) return;
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsHost = isDev ? `${window.location.hostname}:5000` : window.location.host;
-    const wsUrl = `${protocol}//${wsHost}`;
-    
-    let ws = null;
-    try {
-      ws = new WebSocket(wsUrl);
+    const wsUrl = `${protocol}//${window.location.host}?token=${token}`;
+    let socket;
 
-      ws.onopen = () => setWsConnected(true);
-      ws.onmessage = (event) => {
+    try {
+      socket = new WebSocket(wsUrl);
+      socket.onopen = () => setWsConnected(true);
+      socket.onclose = () => setWsConnected(false);
+      socket.onerror = () => setWsConnected(false);
+      socket.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'TASK_CREATED' || data.type === 'TASK_UPDATED' || data.type === 'TASK_DELETED') {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'TASK_CREATED' || msg.type === 'TASK_UPDATED' || msg.type === 'TASK_DELETED') {
             fetchTasks();
           }
         } catch (e) {
-          console.error('WS Parse error', e);
+          console.error('WS Error:', e);
         }
       };
-
-      ws.onclose = () => setWsConnected(false);
-      ws.onerror = () => setWsConnected(false);
-    } catch (e) {
-      console.error('WebSocket Error:', e);
+    } catch (err) {
+      console.error('WebSocket connection failed', err);
     }
 
     return () => {
-      if (ws) ws.close();
+      if (socket) socket.close();
     };
-  }, [fetchTasks]);
+  }, [user, token, fetchTasks]);
 
-  // Modals state
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState(null);
-  const [defaultTaskStatus, setDefaultTaskStatus] = useState('todo');
-
-  // Auth actions
-  const handleAuthSuccess = (userData, authToken) => {
+  const handleAuthSuccess = (newToken, userData) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
     setUser(userData);
-    setToken(authToken);
-    localStorage.setItem('token', authToken);
+    setIsAuthModalOpen(false);
   };
 
   const logout = () => {
-    setUser(null);
-    setToken('');
     localStorage.removeItem('token');
+    setToken('');
+    setUser(null);
     setTasks([]);
   };
 
-  // Task Actions
   const handleSaveTask = async (taskData) => {
-    if (!token) {
-      setIsAuthModalOpen(true);
-      return;
-    }
-
-    const isEdit = !!taskData.id;
-    const url = isEdit ? `/api/tasks/${taskData.id}` : '/api/tasks';
-    const method = isEdit ? 'PUT' : 'POST';
-
     try {
+      const url = taskToEdit ? `/api/tasks/${taskToEdit._id}` : '/api/tasks';
+      const method = taskToEdit ? 'PUT' : 'POST';
+
       const res = await fetch(url, {
         method,
         headers: {
@@ -224,14 +212,19 @@ export default function App() {
 
       if (res.ok) {
         fetchTasks();
+        setIsTaskModalOpen(false);
       }
     } catch (err) {
       console.error('Error saving task:', err);
     }
   };
 
-  const handleStatusChange = async (taskId, newStatus) => {
-    if (!token) return;
+  const handleMoveTask = async (taskId, newStatus) => {
+    // Optimistic UI update
+    setTasks((prev) =>
+      prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t))
+    );
+
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
@@ -241,18 +234,18 @@ export default function App() {
         },
         body: JSON.stringify({ status: newStatus })
       });
-      if (res.ok) {
+
+      if (!res.ok) {
         fetchTasks();
       }
     } catch (err) {
-      console.error('Error updating task status:', err);
+      console.error('Error moving task:', err);
+      fetchTasks();
     }
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (!token) return;
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
-
+    setTasks((prev) => prev.filter((t) => t._id !== taskId));
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'DELETE',
@@ -283,12 +276,16 @@ export default function App() {
 
   return (
     <>
-      {/* Animated Canvas Ambient Background */}
+      {/* Animated Canvas Background with Cursor FX */}
       <AnimatedBackground
         theme={theme}
         bgColor={getEffectiveBgColor()}
         enableCursorFx={enableCursorFx}
         bgAnimMode={bgAnimMode}
+        griffinTheme={griffinTheme}
+        griffinSize={griffinSize}
+        griffinSpeed={griffinSpeed}
+        enableFeatherSparks={enableFeatherSparks}
       />
 
       {/* Sleek Precision Cursor Follower Ring */}
@@ -333,67 +330,55 @@ export default function App() {
             {activeView === 'kanban' ? (
               <KanbanBoard
                 tasks={tasks}
-                onEdit={openEditTaskModal}
-                onDelete={handleDeleteTask}
-                onStatusChange={handleStatusChange}
-                onOpenNewTask={openNewTaskModal}
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
+                priorityFilter={priorityFilter}
+                onEditTask={openEditTaskModal}
+                onDeleteTask={handleDeleteTask}
+                onMoveTask={handleMoveTask}
+                onAddTask={openNewTaskModal}
               />
             ) : (
               <ListView
                 tasks={tasks}
-                onEdit={openEditTaskModal}
-                onDelete={handleDeleteTask}
-                onStatusChange={handleStatusChange}
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
+                priorityFilter={priorityFilter}
+                onEditTask={openEditTaskModal}
+                onDeleteTask={handleDeleteTask}
+                onMoveTask={handleMoveTask}
+                onAddTask={openNewTaskModal}
               />
             )}
           </main>
         ) : (
-          /* Welcome Guest Banner */
-          <div className="glass-panel animate-fade" style={{
-            padding: '40px 24px',
-            borderRadius: 'var(--radius-lg)',
-            textAlign: 'center',
-            maxWidth: '680px',
-            margin: '20px auto'
-          }}>
-            <div style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: 'var(--gradient-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px auto',
-              boxShadow: 'var(--shadow-glow)'
-            }}>
-              <Sparkles size={28} color="#ffffff" />
+          /* Guest Hero Banner */
+          <div className="glass-panel" style={{ maxWidth: '780px', margin: '60px auto', padding: '48px', textAlign: 'center', borderRadius: 'var(--radius-lg)' }}>
+            <div style={{ display: 'inline-flex', padding: '12px', background: 'var(--bg-glass-hover)', borderRadius: '50%', marginBottom: '20px', boxShadow: 'var(--shadow-glow)' }}>
+              <Sparkles size={42} color="var(--primary)" />
             </div>
-
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Welcome to TaskMaster</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Full-stack Task Management Web Application with cursor-based Griffin Background animation and real-time WebSockets.
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '16px', letterSpacing: '-0.02em' }}>
+              TaskMaster Pro
+            </h1>
+            <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginBottom: '32px', lineHeight: 1.6 }}>
+              A high-performance real-time task management workstation with live WebSockets sync, Kanban drag-and-drop, and interactive customizable background controls.
             </p>
-
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
-              <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem' }}>
-                Sign In or Register
-              </button>
-              <button className="btn btn-secondary" onClick={() => setIsThemeModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Feather size={16} color="var(--primary)" /> Customize Griffin & Background
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+              <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '12px 28px', fontSize: '1rem' }}>
+                Get Started / Sign In
               </button>
             </div>
 
             {/* Key Features Overview Pills */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Interactive Griffin Animation
+                <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets Sync
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets
+                <CheckCircle2 size={15} color="var(--primary)" /> Kanban Drag & Drop
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Customizable Background & Themes
+                <CheckCircle2 size={15} color="var(--primary)" /> Customizable Background & FX
               </div>
             </div>
           </div>

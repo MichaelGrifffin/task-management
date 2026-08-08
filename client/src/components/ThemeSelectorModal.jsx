@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Palette, Sparkles, Check, Pipette, MousePointer, Zap } from 'lucide-react';
+import { X, Palette, Sparkles, Check, Pipette, MousePointer, Zap, Feather, Sliders } from 'lucide-react';
 
 export default function ThemeSelectorModal({
   isOpen,
@@ -14,8 +14,16 @@ export default function ThemeSelectorModal({
   setEnableCursorFx,
   enableCursorRing,
   setEnableCursorRing,
-  bgAnimMode = 'particles',
-  setBgAnimMode
+  bgAnimMode = 'griffin',
+  setBgAnimMode,
+  griffinTheme = 'golden',
+  setGriffinTheme,
+  griffinSize = 1.0,
+  setGriffinSize,
+  griffinSpeed = 1.0,
+  setGriffinSpeed,
+  enableFeatherSparks = true,
+  setEnableFeatherSparks
 }) {
   if (!isOpen) return null;
 
@@ -28,6 +36,14 @@ export default function ThemeSelectorModal({
     { id: 'ocean', name: 'Deep Ocean', primary: '#0284c7', secondary: '#06b6d4', bg: '#051329' },
     { id: 'amber', name: 'Solar Amber', primary: '#f59e0b', secondary: '#ef4444', bg: '#171008' },
     { id: 'noir', name: 'Cyber Noir', primary: '#e4e4e7', secondary: '#a1a1aa', bg: '#000000' }
+  ];
+
+  const griffinElements = [
+    { id: 'golden', name: '🦅 Golden Celestial', primary: '#fbbf24', secondary: '#f59e0b' },
+    { id: 'silver', name: '⚔️ Silver Frost', primary: '#e2e8f0', secondary: '#38bdf8' },
+    { id: 'crimson', name: '🔥 Phoenix Crimson', primary: '#ef4444', secondary: '#f97316' },
+    { id: 'void', name: '🌌 Void Star', primary: '#c084fc', secondary: '#f0abfc' },
+    { id: 'emerald', name: '🌿 Emerald Forest', primary: '#10b981', secondary: '#d97706' }
   ];
 
   const bgPresets = [
@@ -44,7 +60,7 @@ export default function ThemeSelectorModal({
         className="glass-panel modal-card animate-fade"
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: '540px',
+          maxWidth: '580px',
           maxHeight: '90vh',
           overflowY: 'auto',
           borderRadius: 'var(--radius-lg)',
@@ -64,12 +80,12 @@ export default function ThemeSelectorModal({
               justifyContent: 'center',
               boxShadow: 'var(--shadow-glow)'
             }}>
-              <Sparkles size={22} color="#ffffff" />
+              <Feather size={22} color="#ffffff" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Theme & Background Customizer</h2>
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Background & Griffin Customizer</h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                Control UI color palettes, background FX, and cursor interaction
+                Control Griffin animations, wings & feathers, background colors, and cursor FX
               </p>
             </div>
           </div>
@@ -78,32 +94,127 @@ export default function ThemeSelectorModal({
           </button>
         </div>
 
-        {/* Section 1: Background FX Mode */}
+        {/* Section 1: Background Animation Mode */}
         <div style={{ marginBottom: '20px' }}>
           <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-            <Zap size={15} color="var(--primary)" /> Background Animation Mode
+            <Zap size={15} color="var(--primary)" /> Canvas Background Mode
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+            <button
+              onClick={() => setBgAnimMode && setBgAnimMode('griffin')}
+              className={`btn ${bgAnimMode === 'griffin' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>🦅</span>
+              <span>Griffin Only</span>
+            </button>
+            <button
+              onClick={() => setBgAnimMode && setBgAnimMode('hybrid')}
+              className={`btn ${bgAnimMode === 'hybrid' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>✨</span>
+              <span>Hybrid Griffin</span>
+            </button>
             <button
               onClick={() => setBgAnimMode && setBgAnimMode('particles')}
               className={`btn ${bgAnimMode === 'particles' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '10px 8px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
             >
-              <Sparkles size={16} />
+              <span style={{ fontSize: '1.2rem' }}>🌌</span>
               <span>Particle Mesh</span>
-            </button>
-            <button
-              onClick={() => setBgAnimMode && setBgAnimMode('none')}
-              className={`btn ${bgAnimMode === 'none' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '10px 8px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <Palette size={16} />
-              <span>Clean Theme (No Mesh)</span>
             </button>
           </div>
         </div>
 
-        {/* Section 2: UI Color Themes */}
+        {/* Section 2: Griffin Customization */}
+        {(bgAnimMode === 'griffin' || bgAnimMode === 'hybrid') && (
+          <div style={{
+            marginBottom: '20px',
+            padding: '14px',
+            background: 'rgba(99, 102, 241, 0.06)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid rgba(99, 102, 241, 0.2)'
+          }}>
+            <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+              <Feather size={15} color="var(--primary)" /> Griffin Element & Feather Style
+            </label>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '8px', marginBottom: '14px' }}>
+              {griffinElements.map((el) => {
+                const isSel = griffinTheme === el.id;
+                return (
+                  <button
+                    key={el.id}
+                    onClick={() => setGriffinTheme && setGriffinTheme(el.id)}
+                    style={{
+                      padding: '8px 6px',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      borderRadius: 'var(--radius-sm)',
+                      border: isSel ? `2px solid ${el.primary}` : '1px solid var(--border-color)',
+                      background: isSel ? 'var(--bg-glass-hover)' : 'var(--bg-surface)',
+                      color: 'var(--text-main)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <span>{el.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Wingspan / Size & Speed Sliders */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Sliders size={13} /> Size:</span>
+                  <span>{Math.round(griffinSize * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.7"
+                  max="1.5"
+                  step="0.05"
+                  value={griffinSize}
+                  onChange={(e) => setGriffinSize && setGriffinSize(parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer' }}
+                />
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Zap size={13} /> Speed:</span>
+                  <span>{Math.round(griffinSpeed * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.6"
+                  max="1.8"
+                  step="0.1"
+                  value={griffinSpeed}
+                  onChange={(e) => setGriffinSpeed && setGriffinSpeed(parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer' }}
+                />
+              </div>
+            </div>
+
+            {/* Feather Sparks Toggle */}
+            <button
+              onClick={() => setEnableFeatherSparks && setEnableFeatherSparks(!enableFeatherSparks)}
+              className={`btn ${enableFeatherSparks ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ width: '100%', padding: '8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+            >
+              <Check size={14} style={{ opacity: enableFeatherSparks ? 1 : 0 }} />
+              <span>Feather Sparks & Flight Trails</span>
+            </button>
+          </div>
+        )}
+
+        {/* Section 3: UI Color Themes */}
         <div style={{ marginBottom: '20px' }}>
           <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
             <Palette size={15} color="var(--primary)" /> UI Accent Theme
@@ -139,7 +250,7 @@ export default function ThemeSelectorModal({
           </div>
         </div>
 
-        {/* Section 3: Custom Background Colors */}
+        {/* Section 4: Custom Background Colors */}
         <div style={{ marginBottom: '20px' }}>
           <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
             <Pipette size={15} color="var(--primary)" /> Custom Background Color
@@ -179,7 +290,7 @@ export default function ThemeSelectorModal({
           </div>
         </div>
 
-        {/* Section 4: Cursor Effects */}
+        {/* Section 5: Cursor Effects */}
         <div>
           <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
             <MousePointer size={15} color="var(--primary)" /> Cursor Effects
