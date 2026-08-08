@@ -1,7 +1,7 @@
 import React from 'react';
 import { Edit3, Trash2, Calendar, Tag } from 'lucide-react';
 
-export default function ListView({ tasks, onEdit, onDelete, onStatusChange }) {
+function ListView({ tasks = [], onEdit, onDelete, onStatusChange }) {
   if (tasks.length === 0) {
     return (
       <div className="glass-panel" style={{ padding: '60px', borderRadius: 'var(--radius-lg)', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -36,12 +36,13 @@ export default function ListView({ tasks, onEdit, onDelete, onStatusChange }) {
           </thead>
           <tbody>
             {tasks.map((task) => {
+              const taskId = task.id || task._id;
               const tagsList = task.tags ? task.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
               const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
 
               return (
                 <tr 
-                  key={task.id} 
+                  key={taskId} 
                   style={{
                     borderBottom: '1px solid var(--border-color)',
                     transition: 'background var(--transition-fast)'
@@ -52,8 +53,8 @@ export default function ListView({ tasks, onEdit, onDelete, onStatusChange }) {
                   {/* Status Dropdown */}
                   <td style={{ padding: '16px 20px' }}>
                     <select
-                      value={task.status}
-                      onChange={(e) => onStatusChange(task.id, e.target.value)}
+                      value={task.status || 'todo'}
+                      onChange={(e) => onStatusChange(taskId, e.target.value)}
                       style={{
                         fontSize: '0.8rem',
                         fontWeight: 600,
@@ -96,38 +97,44 @@ export default function ListView({ tasks, onEdit, onDelete, onStatusChange }) {
 
                   {/* Due Date */}
                   <td style={{ padding: '16px 20px', fontSize: '0.85rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: isOverdue ? '#ef4444' : 'var(--text-muted)', fontWeight: isOverdue ? 700 : 500 }}>
-                      <Calendar size={14} />
-                      <span>{task.due_date ? new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</span>
-                    </div>
+                    {task.due_date ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: isOverdue ? '#ef4444' : 'var(--text-muted)', fontWeight: isOverdue ? 700 : 500 }}>
+                        <Calendar size={14} />
+                        <span>{new Date(task.due_date).toLocaleDateString()}</span>
+                      </div>
+                    ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
                   </td>
 
                   {/* Tags */}
                   <td style={{ padding: '16px 20px' }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {tagsList.map((tag, idx) => (
-                        <span key={idx} style={{
-                          fontSize: '0.7rem',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          background: 'var(--bg-input)',
-                          color: 'var(--text-muted)',
-                          border: '1px solid var(--border-color)'
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
+                      {tagsList.length > 0 ? (
+                        tagsList.map((tag, idx) => (
+                          <span key={idx} style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            fontSize: '0.7rem',
+                            padding: '2px 6px',
+                            borderRadius: 'var(--radius-sm)',
+                            background: 'var(--bg-input)',
+                            color: 'var(--text-muted)'
+                          }}>
+                            <Tag size={9} /> {tag}
+                          </span>
+                        ))
+                      ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>-</span>}
                     </div>
                   </td>
 
                   {/* Actions */}
                   <td style={{ padding: '16px 20px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                      <button className="btn-icon" onClick={() => onEdit(task)} title="Edit">
-                        <Edit3 size={16} />
+                      <button className="btn-icon" onClick={() => onEdit(task)} title="Edit Task">
+                        <Edit3 size={15} />
                       </button>
-                      <button className="btn-icon" onClick={() => onDelete(task.id)} title="Delete" style={{ color: '#ef4444' }}>
-                        <Trash2 size={16} />
+                      <button className="btn-icon" onClick={() => onDelete(taskId)} title="Delete Task" style={{ color: '#ef4444' }}>
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </td>
@@ -140,3 +147,5 @@ export default function ListView({ tasks, onEdit, onDelete, onStatusChange }) {
     </div>
   );
 }
+
+export default React.memo(ListView);

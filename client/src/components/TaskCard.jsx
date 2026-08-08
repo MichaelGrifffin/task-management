@@ -1,7 +1,7 @@
 import React from 'react';
-import { Calendar, Edit3, Trash2, Tag, ArrowRight } from 'lucide-react';
+import { Calendar, Edit3, Trash2, Tag } from 'lucide-react';
 
-export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
+function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
   const getPriorityBadge = (priority) => {
     switch (priority) {
       case 'urgent': return <span className="badge badge-priority-urgent">Urgent</span>;
@@ -12,8 +12,8 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
   };
 
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
-
   const tagsList = task.tags ? task.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const taskId = task.id || task._id;
 
   return (
     <div className="glass-panel animate-fade" style={{
@@ -38,7 +38,7 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
           <button className="btn-icon" onClick={() => onEdit(task)} title="Edit Task">
             <Edit3 size={15} />
           </button>
-          <button className="btn-icon" onClick={() => onDelete(task.id)} title="Delete Task" style={{ color: '#ef4444' }}>
+          <button className="btn-icon" onClick={() => onDelete(taskId)} title="Delete Task" style={{ color: '#ef4444' }}>
             <Trash2 size={15} />
           </button>
         </div>
@@ -94,39 +94,31 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
       {/* Footer: Due Date & Status Switcher */}
       <div style={{
         display: 'flex',
-        justify: 'space-between',
+        justifyContent: 'space-between',
         alignItems: 'center',
         paddingTop: '10px',
         borderTop: '1px solid var(--border-color)',
-        marginTop: 'auto'
+        fontSize: '0.78rem',
+        color: 'var(--text-muted)'
       }}>
-        {/* Due Date */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          fontSize: '0.78rem',
-          color: isOverdue ? '#ef4444' : 'var(--text-muted)',
-          fontWeight: isOverdue ? 700 : 500
-        }}>
-          <Calendar size={14} />
-          <span>{task.due_date ? new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'No due date'}</span>
-          {isOverdue && <span style={{ fontSize: '0.7rem', padding: '1px 6px', background: 'rgba(239,68,68,0.2)', borderRadius: '4px' }}>OVERDUE</span>}
-        </div>
+        {task.due_date ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: isOverdue ? '#ef4444' : 'var(--text-muted)', fontWeight: isOverdue ? 700 : 500 }}>
+            <Calendar size={13} />
+            <span>{new Date(task.due_date).toLocaleDateString()}</span>
+          </div>
+        ) : <div />}
 
-        {/* Quick Status Select */}
         <select
-          value={task.status}
-          onChange={(e) => onStatusChange(task.id, e.target.value)}
+          value={task.status || 'todo'}
+          onChange={(e) => onStatusChange(taskId, e.target.value)}
           style={{
+            background: 'var(--bg-surface)',
+            color: 'var(--text-main)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '4px 8px',
             fontSize: '0.75rem',
             fontWeight: 600,
-            padding: '4px 8px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--bg-input)',
-            color: task.status === 'completed' ? 'var(--status-completed)' :
-                   task.status === 'in_progress' ? 'var(--status-in-progress)' : 'var(--status-todo)',
-            border: '1px solid var(--border-color)',
             cursor: 'pointer'
           }}
         >
@@ -139,3 +131,5 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }) {
     </div>
   );
 }
+
+export default React.memo(TaskCard);

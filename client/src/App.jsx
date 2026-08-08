@@ -134,7 +134,7 @@ export default function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        setTasks(data);
+        setTasks(Array.isArray(data) ? data : (data.tasks || []));
       } else if (res.status === 401) {
         logout();
       }
@@ -273,6 +273,17 @@ export default function App() {
     setIsTaskModalOpen(true);
   };
 
+  // Filter tasks with useMemo for fast instant updates
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((t) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchQuery = !q || (t.title && t.title.toLowerCase().includes(q)) || (t.description && t.description.toLowerCase().includes(q));
+      const matchStatus = statusFilter === 'all' || t.status === statusFilter;
+      const matchPriority = priorityFilter === 'all' || t.priority === priorityFilter;
+      return matchQuery && matchStatus && matchPriority;
+    });
+  }, [tasks, searchQuery, statusFilter, priorityFilter]);
+
   return (
     <>
       {/* Animated Canvas Background with Cursor Flower Animation */}
@@ -328,25 +339,18 @@ export default function App() {
             {/* View Container: Kanban or List */}
             {activeView === 'kanban' ? (
               <KanbanBoard
-                tasks={tasks}
-                searchQuery={searchQuery}
-                statusFilter={statusFilter}
-                priorityFilter={priorityFilter}
-                onEditTask={openEditTaskModal}
-                onDeleteTask={handleDeleteTask}
-                onMoveTask={handleMoveTask}
-                onAddTask={openNewTaskModal}
+                tasks={filteredTasks}
+                onEdit={openEditTaskModal}
+                onDelete={handleDeleteTask}
+                onStatusChange={handleMoveTask}
+                onOpenNewTask={openNewTaskModal}
               />
             ) : (
               <ListView
-                tasks={tasks}
-                searchQuery={searchQuery}
-                statusFilter={statusFilter}
-                priorityFilter={priorityFilter}
-                onEditTask={openEditTaskModal}
-                onDeleteTask={handleDeleteTask}
-                onMoveTask={handleMoveTask}
-                onAddTask={openNewTaskModal}
+                tasks={filteredTasks}
+                onEdit={openEditTaskModal}
+                onDelete={handleDeleteTask}
+                onStatusChange={handleMoveTask}
               />
             )}
           </main>

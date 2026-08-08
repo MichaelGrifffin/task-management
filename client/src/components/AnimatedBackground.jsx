@@ -21,8 +21,24 @@ export default function AnimatedBackground({
     const ctx = canvas.getContext('2d');
 
     let animationFrameId;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let lastTime = performance.now();
+
+    // Device Pixel Ratio for High-DPI / Retina Crisp Rendering
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    const setupCanvasSize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.scale(dpr, dpr);
+    };
+
+    setupCanvasSize();
 
     // Mouse & Touch Tracking State
     const mouse = {
@@ -36,8 +52,7 @@ export default function AnimatedBackground({
     };
 
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      setupCanvasSize();
     };
 
     const handleMouseMove = (e) => {
@@ -62,7 +77,7 @@ export default function AnimatedBackground({
           x: e.clientX,
           y: e.clientY,
           radius: 5,
-          maxRadius: 220,
+          maxRadius: 240,
           alpha: 1.0,
           color: flowerPal.glow
         });
@@ -70,7 +85,11 @@ export default function AnimatedBackground({
 
       // Massive Floral Bloom Burst on Click
       if (bgAnimMode === 'flowers' || bgAnimMode === 'hybrid') {
-        // Spawn 3 central blooming flowers
+        // Limit active blooming flowers array for peak performance
+        if (bloomingFlowersRef.current.length > 45) {
+          bloomingFlowersRef.current.splice(0, 10);
+        }
+
         for (let b = 0; b < 3; b++) {
           bloomingFlowersRef.current.push({
             x: e.clientX + (Math.random() - 0.5) * 30,
@@ -88,8 +107,12 @@ export default function AnimatedBackground({
           });
         }
 
-        // Burst of 28 swirling petals & pollen sparks
+        // Burst of swirling petals & pollen sparks
         if (enablePetalSparks) {
+          if (driftingPetalsRef.current.length > 70) {
+            driftingPetalsRef.current.splice(0, 15);
+          }
+
           for (let i = 0; i < 28; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = Math.random() * 7 + 2.5;
@@ -158,8 +181,11 @@ export default function AnimatedBackground({
       });
     }
 
-    // MAIN RENDER LOOP
-    const draw = () => {
+    // MAIN RENDER LOOP WITH DELTA TIME STEPPING
+    const draw = (now) => {
+      const delta = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
       const themePal = getThemeColors(theme);
       const flowerPal = getFlowerPalette(flowerTheme);
       const effectiveBg = bgColor || themePal.bg;
@@ -231,8 +257,8 @@ export default function AnimatedBackground({
       // Draw click shockwaves
       for (let i = clickRingsRef.current.length - 1; i >= 0; i--) {
         const ring = clickRingsRef.current[i];
-        ring.radius += 7.5;
-        ring.alpha -= 0.032;
+        ring.radius += 8.5;
+        ring.alpha -= 0.035;
 
         if (ring.alpha <= 0 || ring.radius >= ring.maxRadius) {
           clickRingsRef.current.splice(i, 1);
@@ -243,13 +269,17 @@ export default function AnimatedBackground({
         ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
         ctx.strokeStyle = ring.color;
         ctx.globalAlpha = ring.alpha;
-        ctx.lineWidth = 2.8;
+        ctx.lineWidth = 3;
         ctx.stroke();
         ctx.globalAlpha = 1.0;
       }
 
       // SPAWN CURSOR FLOWER TRAIL ACCORDING TO MOUSE MOVEMENT
       if ((bgAnimMode === 'flowers' || bgAnimMode === 'hybrid') && mouseDist > 12 / flowerDensity) {
+        if (bloomingFlowersRef.current.length > 50) {
+          bloomingFlowersRef.current.shift();
+        }
+
         bloomingFlowersRef.current.push({
           x: mouse.x,
           y: mouse.y,
@@ -267,6 +297,10 @@ export default function AnimatedBackground({
 
         // Spawn drifting petal sparks along cursor path
         if (enablePetalSparks && Math.random() < 0.6) {
+          if (driftingPetalsRef.current.length > 80) {
+            driftingPetalsRef.current.shift();
+          }
+
           driftingPetalsRef.current.push({
             x: mouse.x,
             y: mouse.y,
@@ -293,8 +327,7 @@ export default function AnimatedBackground({
         for (let i = bloomingFlowersRef.current.length - 1; i >= 0; i--) {
           const fl = bloomingFlowersRef.current[i];
 
-          // Grow radius & rotate
-          fl.radius += (fl.maxRadius - fl.radius) * 0.12;
+          fl.radius += (fl.maxRadius - fl.radius) * 0.14;
           fl.rotation += fl.vRot;
           fl.alpha -= fl.decay;
 
@@ -308,7 +341,7 @@ export default function AnimatedBackground({
           ctx.rotate(fl.rotation);
           ctx.globalAlpha = fl.alpha;
 
-          // Draw Flower Petals (5 to 8 layered petals)
+          // Draw Flower Petals
           const angleStep = (Math.PI * 2) / fl.petalCount;
           for (let p = 0; p < fl.petalCount; p++) {
             ctx.save();
@@ -368,7 +401,6 @@ export default function AnimatedBackground({
           ctx.rotate(pt.rotation);
           ctx.globalAlpha = pt.alpha;
 
-          // Petal Curve
           ctx.beginPath();
           ctx.moveTo(0, -pt.length / 2);
           ctx.quadraticCurveTo(pt.size, 0, 0, pt.length / 2);
@@ -376,7 +408,6 @@ export default function AnimatedBackground({
           ctx.fillStyle = pt.color;
           ctx.fill();
 
-          // Petal Center Vein
           ctx.beginPath();
           ctx.moveTo(0, -pt.length / 2);
           ctx.lineTo(0, pt.length / 2);
@@ -392,7 +423,7 @@ export default function AnimatedBackground({
       animationFrameId = requestAnimationFrame(draw);
     };
 
-    draw();
+    draw(performance.now());
 
     return () => {
       window.removeEventListener('resize', handleResize);

@@ -22,17 +22,8 @@ function validatePassword(password) {
   if (!password || typeof password !== 'string') {
     return 'Password is required';
   }
-  if (!/^[A-Z]/.test(password)) {
-    return 'Password must start with an uppercase letter (A-Z)';
-  }
-  if (!/\d/.test(password)) {
-    return 'Password must contain at least one number (0-9)';
-  }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
-    return 'Password must contain at least one special character (e.g. !@#$%^&*)';
-  }
-  if (password.length > 10) {
-    return 'Password length must not exceed 10 characters';
+  if (password.length < 6) {
+    return 'Password must be at least 6 characters long';
   }
   return null;
 }
@@ -58,21 +49,21 @@ router.post('/register', async (req, res) => {
 
     // Check if email or username exists
     const existingUser = await dbGet(
-      'SELECT id FROM users WHERE email = ? OR username = ?',
-      [email.toLowerCase(), username]
+      'SELECT id FROM users WHERE LOWER(email) = ? OR LOWER(username) = ?',
+      [email.toLowerCase().trim(), username.toLowerCase().trim()]
     );
 
     if (existingUser) {
-      return res.status(400).json({ error: 'Username or email already in use' });
+      return res.status(400).json({ error: 'Username or email is already registered' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await dbRun(
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username, email.toLowerCase(), hashedPassword]
+      [username.trim(), email.toLowerCase().trim(), hashedPassword]
     );
 
-    const user = { id: result.id, username, email: email.toLowerCase() };
+    const user = { id: result.id, username: username.trim(), email: email.toLowerCase().trim() };
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, {
       expiresIn: '7d'
     });
@@ -102,7 +93,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: emailErr });
     }
 
-    const user = await dbGet('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
+    const user = await dbGet('SELECT * FROM users WHERE LOWER(email) = ?', [email.toLowerCase().trim()]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }

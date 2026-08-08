@@ -15,21 +15,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
   if (!isOpen) return null;
 
-  // Real-time validations
   const isEmailValid = EMAIL_REGEX.test(email.trim());
-
-  const passwordRules = {
-    startsWithUppercase: /^[A-Z]/.test(password),
-    hasNumber: /\d/.test(password),
-    hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password),
-    validLength: password.length > 0 && password.length <= 10
-  };
-
-  const isPasswordValid = 
-    passwordRules.startsWithUppercase &&
-    passwordRules.hasNumber &&
-    passwordRules.hasSpecialChar &&
-    passwordRules.validLength;
+  const isPasswordValid = password.length >= 6;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,26 +39,18 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     }
 
     if (!password) {
-      setError('Please enter a password');
+      setError('Please enter your password');
       return;
     }
 
-    if (!isPasswordValid) {
-      if (!passwordRules.startsWithUppercase) {
-        setError('Password must start with an uppercase letter (A-Z)');
-      } else if (!passwordRules.hasNumber) {
-        setError('Password must contain at least one number (0-9)');
-      } else if (!passwordRules.hasSpecialChar) {
-        setError('Password must contain at least one special character (e.g. !@#$%^&*)');
-      } else if (password.length > 10) {
-        setError('Password length cannot exceed 10 characters');
-      }
+    if (!isLogin && !isPasswordValid) {
+      setError('Password must be at least 6 characters long');
       return;
     }
 
     setLoading(true);
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    const payload = isLogin ? { email, password } : { username, email, password };
+    const payload = isLogin ? { email: email.trim(), password } : { username: username.trim(), email: email.trim(), password };
 
     try {
       const res = await fetch(endpoint, {
@@ -85,7 +64,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      onAuthSuccess(data.user, data.token);
+      // Pass token as first argument, user as second argument
+      if (onAuthSuccess) {
+        onAuthSuccess(data.token, data.user);
+      }
       onClose();
     } catch (err) {
       setError(err.message);
@@ -100,14 +82,18 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="glass-panel modal-card animate-fade" style={{
-        maxWidth: '460px',
-        width: '100%',
-        borderRadius: 'var(--radius-lg)',
-        padding: '28px',
-        position: 'relative'
-      }}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div 
+        className="glass-panel modal-card animate-fade" 
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '440px',
+          width: '100%',
+          borderRadius: 'var(--radius-lg)',
+          padding: '28px',
+          position: 'relative'
+        }}
+      >
         <button className="btn-icon" onClick={onClose} style={{ position: 'absolute', right: '20px', top: '20px' }}>
           <X size={20} />
         </button>
@@ -223,21 +209,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           </div>
 
           {/* Password Input */}
-          <div className="input-group" style={{ marginBottom: '16px' }}>
+          <div className="input-group" style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <label className="input-label" style={{ marginBottom: 0 }}>Password</label>
-              <span style={{ fontSize: '0.75rem', color: password.length > 10 ? '#ef4444' : 'var(--text-muted)' }}>
-                {password.length}/10 max
-              </span>
+              {!isLogin && (
+                <span style={{ fontSize: '0.75rem', color: isPasswordValid ? '#10b981' : 'var(--text-muted)' }}>
+                  Min 6 characters
+                </span>
+              )}
             </div>
             <div style={{ position: 'relative' }}>
               <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 className="input-field"
-                placeholder="e.g. Pass123!"
+                placeholder="Enter your password"
                 value={password}
-                maxLength={12}
                 onBlur={() => setTouched(prev => ({ ...prev, password: true }))}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -245,8 +232,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 }}
                 style={{
                   paddingLeft: '38px',
-                  paddingRight: '38px',
-                  borderColor: touched.password && password.length > 0 ? (isPasswordValid ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)') : undefined
+                  paddingRight: '38px'
                 }}
               />
               <button
@@ -268,43 +254,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-
-            {/* Password Validation Requirements Checklist */}
-            <div style={{
-              marginTop: '10px',
-              padding: '10px 12px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid var(--border-color)',
-              fontSize: '0.78rem',
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '6px 12px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordRules.startsWithUppercase ? '#10b981' : 'var(--text-muted)' }}>
-                {passwordRules.startsWithUppercase ? <CheckCircle2 size={13} /> : <XCircle size={13} style={{ opacity: 0.5 }} />}
-                <span>Starts with Uppercase</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordRules.hasNumber ? '#10b981' : 'var(--text-muted)' }}>
-                {passwordRules.hasNumber ? <CheckCircle2 size={13} /> : <XCircle size={13} style={{ opacity: 0.5 }} />}
-                <span>Contains a Number</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordRules.hasSpecialChar ? '#10b981' : 'var(--text-muted)' }}>
-                {passwordRules.hasSpecialChar ? <CheckCircle2 size={13} /> : <XCircle size={13} style={{ opacity: 0.5 }} />}
-                <span>Special Char (!@#$...)</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: passwordRules.validLength ? '#10b981' : (password.length > 10 ? '#ef4444' : 'var(--text-muted)') }}>
-                {passwordRules.validLength ? <CheckCircle2 size={13} /> : <XCircle size={13} style={{ opacity: 0.5 }} />}
-                <span>Max 10 Chars</span>
-              </div>
-            </div>
           </div>
 
           <button
             type="submit"
             className="btn btn-primary"
             disabled={loading}
-            style={{ width: '100%', marginTop: '12px', padding: '12px' }}
+            style={{ width: '100%', padding: '12px' }}
           >
             {loading ? 'Processing...' : isLogin ? (
               <><LogIn size={18} /> Sign In</>
@@ -317,4 +273,3 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     </div>
   );
 }
-

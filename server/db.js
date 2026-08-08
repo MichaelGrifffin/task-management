@@ -10,9 +10,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Enable foreign keys and initialize tables
+// Enable foreign keys, WAL journal mode for high concurrency, and initialize tables & indexes
 db.serialize(() => {
   db.run('PRAGMA foreign_keys = ON');
+  db.run('PRAGMA journal_mode = WAL'); // High concurrency WAL mode
 
   // Users table
   db.run(`
@@ -41,6 +42,11 @@ db.serialize(() => {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `);
+
+  // Performance Indexing
+  db.run('CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority)');
 });
 
 // Helper promises for sqlite3

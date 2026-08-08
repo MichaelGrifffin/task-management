@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import TaskCard from './TaskCard';
 import { Circle, Clock, CheckCircle2, Plus } from 'lucide-react';
 
-export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, onOpenNewTask }) {
+export default function KanbanBoard({ tasks = [], onEdit, onDelete, onStatusChange, onOpenNewTask }) {
   const [mobileTab, setMobileTab] = useState('all'); // 'all' | 'todo' | 'in_progress' | 'completed'
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       id: 'todo',
       title: 'To Do',
       icon: <Circle size={18} color="var(--status-todo)" />,
       badgeClass: 'badge-todo',
-      items: tasks.filter(t => t.status === 'todo')
+      items: tasks.filter(t => (t.status || 'todo') === 'todo')
     },
     {
       id: 'in_progress',
@@ -27,15 +27,17 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
       badgeClass: 'badge-completed',
       items: tasks.filter(t => t.status === 'completed')
     }
-  ];
+  ], [tasks]);
 
-  const visibleColumns = mobileTab === 'all' 
-    ? columns 
-    : columns.filter(col => col.id === mobileTab);
+  const visibleColumns = useMemo(() => {
+    return mobileTab === 'all' 
+      ? columns 
+      : columns.filter(col => col.id === mobileTab);
+  }, [columns, mobileTab]);
 
   return (
     <div>
-      {/* Mobile Quick Column Selector Tabs (Visible on small screens) */}
+      {/* Mobile Quick Column Selector Tabs */}
       <div className="mobile-column-tabs" style={{
         display: 'none',
         gap: '6px',
@@ -98,7 +100,7 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
               {col.items.length > 0 ? (
                 col.items.map(task => (
                   <TaskCard
-                    key={task.id}
+                    key={task.id || task._id}
                     task={task}
                     onEdit={onEdit}
                     onDelete={onDelete}
@@ -109,27 +111,18 @@ export default function KanbanBoard({ tasks, onEdit, onDelete, onStatusChange, o
                 <div style={{
                   flex: 1,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '36px 16px',
                   border: '2px dashed var(--border-color)',
                   borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-subtle)',
-                  textAlign: 'center'
+                  padding: '24px',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.85rem'
                 }}>
-                  <p style={{ fontSize: '0.82rem', marginBottom: '8px' }}>No tasks in {col.title}</p>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => onOpenNewTask(col.id)}
-                    style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-                  >
-                    <Plus size={14} /> Add Task
-                  </button>
+                  No tasks here
                 </div>
               )}
             </div>
-
           </div>
         ))}
       </div>
