@@ -7,8 +7,10 @@ server/node_modules/
 client/dist/
 
 # SQLite Database
-server/*.db
-server/tasks.db
+server/*.db*
+server/tasks.db*
+*.db-wal
+*.db-shm
 
 # Environment variables
 .env
