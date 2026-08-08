@@ -6,6 +6,37 @@ const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
 
 const router = express.Router();
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return 'Email is required';
+  }
+  if (!EMAIL_REGEX.test(email.trim())) {
+    return 'Invalid email format (must be e.g. user@example.com)';
+  }
+  return null;
+}
+
+function validatePassword(password) {
+  if (!password || typeof password !== 'string') {
+    return 'Password is required';
+  }
+  if (!/^[A-Z]/.test(password)) {
+    return 'Password must start with an uppercase letter (A-Z)';
+  }
+  if (!/\d/.test(password)) {
+    return 'Password must contain at least one number (0-9)';
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+    return 'Password must contain at least one special character (e.g. !@#$%^&*)';
+  }
+  if (password.length > 10) {
+    return 'Password length must not exceed 10 characters';
+  }
+  return null;
+}
+
 // Register new user
 router.post('/register', async (req, res) => {
   try {
@@ -15,8 +46,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Username, email, and password are required' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+      return res.status(400).json({ error: emailErr });
+    }
+
+    const passwordErr = validatePassword(password);
+    if (passwordErr) {
+      return res.status(400).json({ error: passwordErr });
     }
 
     // Check if email or username exists
@@ -58,6 +95,11 @@ router.post('/login', async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+      return res.status(400).json({ error: emailErr });
     }
 
     const user = await dbGet('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
