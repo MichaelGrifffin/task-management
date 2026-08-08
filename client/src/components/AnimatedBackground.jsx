@@ -13,15 +13,55 @@ export default function AnimatedBackground({
   const canvasRef = useRef(null);
   const clickRingsRef = useRef([]);
   const featherParticlesRef = useRef([]);
+  const [processedGriffinUrl, setProcessedGriffinUrl] = useState(null);
 
-  // State for SVG Griffin position & physics
+  // State for Griffin position & orientation
   const [griffinTransform, setGriffinTransform] = useState({
     x: typeof window !== 'undefined' ? window.innerWidth / 2 : 500,
     y: typeof window !== 'undefined' ? window.innerHeight / 2 : 300,
     angle: 0,
     rollAngle: 0,
-    wingAngle: 0
+    wingScale: 1
   });
+
+  // Pre-process griffin.png to remove checkerboard background and make transparent
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = '/griffin.png';
+
+    img.onload = () => {
+      const offCanvas = document.createElement('canvas');
+      const w = img.width || 600;
+      const h = img.height || 600;
+      offCanvas.width = w;
+      offCanvas.height = h;
+      const offCtx = offCanvas.getContext('2d');
+
+      offCtx.drawImage(img, 0, 0, w, h);
+      const imgData = offCtx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      // Extract golden griffin beast and turn background transparent
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // Detect checkerboard grey/white background pixels or dark rock base
+        const isGrayscale = Math.abs(r - g) < 22 && Math.abs(g - b) < 22;
+        const isLightBg = r > 100 && g > 100 && b > 100 && isGrayscale;
+        const isDarkRock = r < 75 && g < 75 && b < 75 && isGrayscale;
+
+        if (isLightBg || isDarkRock) {
+          data[i + 3] = 0; // Transparent
+        }
+      }
+
+      offCtx.putImageData(imgData, 0, 0);
+      setProcessedGriffinUrl(offCanvas.toDataURL('image/png'));
+    };
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -79,23 +119,23 @@ export default function AnimatedBackground({
         x: e.clientX,
         y: e.clientY,
         radius: 5,
-        maxRadius: 220,
+        maxRadius: 240,
         alpha: 1.0,
         color: getGriffinPalette(griffinTheme).featherGlow
       });
 
-      // Spawn realistic falling golden feathers & stardust on click
+      // Spawn golden feathers on click
       if (enableFeatherSparks && (bgAnimMode === 'griffin' || bgAnimMode === 'hybrid')) {
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < 28; i++) {
           const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 6.5 + 2;
+          const speed = Math.random() * 7 + 2;
           featherParticlesRef.current.push({
             x: griffin.x,
             y: griffin.y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             size: Math.random() * 6 + 3,
-            length: Math.random() * 12 + 8,
+            length: Math.random() * 14 + 8,
             rotation: Math.random() * Math.PI * 2,
             vRot: (Math.random() - 0.5) * 0.1,
             alpha: 1.0,
@@ -144,7 +184,7 @@ export default function AnimatedBackground({
       }
     };
 
-    // Background particle system
+    // Particles background
     const numParticles = Math.min(Math.floor(width * 0.045), 50);
     const particles = [];
     for (let i = 0; i < numParticles; i++) {
@@ -169,11 +209,11 @@ export default function AnimatedBackground({
 
       ctx.clearRect(0, 0, width, height);
 
-      // Base background
+      // Base fill
       ctx.fillStyle = effectiveBg;
       ctx.fillRect(0, 0, width, height);
 
-      // Radial background glows
+      // Ambient space glows
       const g1 = ctx.createRadialGradient(width * 0.3, height * 0.3, 0, width * 0.3, height * 0.3, width * 0.55);
       g1.addColorStop(0, themePal.grad1);
       g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -186,7 +226,7 @@ export default function AnimatedBackground({
       ctx.fillStyle = g2;
       ctx.fillRect(0, 0, width, height);
 
-      // Particle mesh background
+      // Particle mesh
       if (bgAnimMode === 'particles' || bgAnimMode === 'hybrid') {
         for (let i = 0; i < particles.length; i++) {
           for (let j = i + 1; j < particles.length; j++) {
@@ -222,7 +262,7 @@ export default function AnimatedBackground({
         });
       }
 
-      // Draw click sunbeams
+      // Draw click sunbeam shockwaves
       for (let i = clickRingsRef.current.length - 1; i >= 0; i--) {
         const ring = clickRingsRef.current[i];
         ring.radius += 7.5;
@@ -242,7 +282,7 @@ export default function AnimatedBackground({
         ctx.globalAlpha = 1.0;
       }
 
-      // Update Griffin Flight Physics
+      // Update Griffin Flight Physics & Cursor Tracking
       if (bgAnimMode === 'griffin' || bgAnimMode === 'hybrid') {
         const dx = mouse.x - griffin.x;
         const dy = mouse.y - griffin.y;
@@ -289,13 +329,13 @@ export default function AnimatedBackground({
           }
         }
 
-        // Sync SVG Transform
+        // Sync Griffin Transform State
         setGriffinTransform({
           x: griffin.x,
           y: griffin.y,
           angle: (griffin.angle * 180) / Math.PI,
           rollAngle: (griffin.rollAngle * 180) / Math.PI,
-          wingAngle: Math.sin(griffin.wingCycle) * 16
+          wingScale: 1 + Math.sin(griffin.wingCycle) * 0.08
         });
       }
 
@@ -361,7 +401,8 @@ export default function AnimatedBackground({
   ]);
 
   const pal = getGriffinPalette(griffinTheme);
-  const scale = griffinSize * 0.85;
+  const griffinScaleMultiplier = griffinSize * 0.65;
+  const imageSrc = processedGriffinUrl || '/griffin.png';
 
   return (
     <>
@@ -378,7 +419,7 @@ export default function AnimatedBackground({
         }}
       />
 
-      {/* HIGH-RESOLUTION SVG VECTOR GRIFFIN ENGINE (MATCHING IMAGE 2 EXACTLY) */}
+      {/* PRO-GRADE HIGH-RESOLUTION GRIFFIN BEAST ENGINE */}
       {(bgAnimMode === 'griffin' || bgAnimMode === 'hybrid') && (
         <div
           style={{
@@ -397,183 +438,28 @@ export default function AnimatedBackground({
               position: 'absolute',
               top: 0,
               left: 0,
-              width: 320,
-              height: 320,
-              transform: `translate3d(${griffinTransform.x - 160}px, ${
-                griffinTransform.y - 160
-              }px, 0px) scale(${scale}) rotate(${
+              width: 380,
+              height: 380,
+              transform: `translate3d(${griffinTransform.x - 190}px, ${
+                griffinTransform.y - 190
+              }px, 0px) scale(${griffinScaleMultiplier}) rotate(${
                 griffinTransform.angle + griffinTransform.rollAngle * 0.4
-              }deg)`,
-              transformOrigin: '160px 160px',
+              }deg) scaleY(${griffinTransform.wingScale})`,
+              transformOrigin: '190px 190px',
               willChange: 'transform',
-              filter: `drop-shadow(0 0 16px ${pal.featherGlow})`
+              filter: `drop-shadow(0 0 24px ${pal.featherGlow})`
             }}
           >
-            <svg
-              width="320"
-              height="320"
-              viewBox="0 0 320 320"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <linearGradient id="beakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={pal.beak} />
-                  <stop offset="100%" stopColor="#d97706" />
-                </linearGradient>
-                <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={pal.eaglePrimary} />
-                  <stop offset="60%" stopColor={pal.lionBody} />
-                  <stop offset="100%" stopColor={pal.lionShade} />
-                </linearGradient>
-                <linearGradient id="wingGradNear" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={pal.featherGlow} />
-                  <stop offset="50%" stopColor={pal.eaglePrimary} />
-                  <stop offset="100%" stopColor={pal.eagleSecondary} />
-                </linearGradient>
-                <linearGradient id="wingGradFar" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={pal.eaglePrimary} />
-                  <stop offset="70%" stopColor={pal.eagleSecondary} />
-                  <stop offset="100%" stopColor={pal.lionShade} />
-                </linearGradient>
-              </defs>
-
-              {/* 1. FAR WING (BEHIND BODY) */}
-              <g
-                style={{
-                  transform: `rotate(${-griffinTransform.wingAngle - 10}deg)`,
-                  transformOrigin: '130px 140px',
-                  transition: 'transform 0.05s linear'
-                }}
-              >
-                {/* Upper Primary Feathers */}
-                <path
-                  d="M130 140 C110 80, 60 40, 20 20 C40 60, 70 100, 100 130 Z"
-                  fill="url(#wingGradFar)"
-                />
-                <path
-                  d="M130 140 C100 70, 50 30, 10 15 C30 55, 65 95, 95 125 Z"
-                  fill={pal.wingQuills}
-                  opacity="0.8"
-                />
-                {/* Layered Wing Feather Lines */}
-                <path d="M40 35 Q70 70 110 120" stroke={pal.eagleSecondary} strokeWidth="2.5" />
-                <path d="M55 50 Q80 80 118 125" stroke={pal.eagleSecondary} strokeWidth="2" />
-                <path d="M70 65 Q90 90 125 130" stroke={pal.eagleSecondary} strokeWidth="2" />
-              </g>
-
-              {/* 2. LION TAIL (S-CURVE WITH BUSHY TIP) */}
-              <path
-                d="M100 170 C70 185, 40 160, 30 190 C20 220, 55 240, 45 260"
-                stroke={pal.lionBody}
-                strokeWidth="7"
-                strokeLinecap="round"
-                fill="none"
-              />
-              {/* Tail Tuft */}
-              <path
-                d="M45 260 C35 270, 20 275, 10 265 C15 250, 30 245, 45 260 Z"
-                fill={pal.eaglePrimary}
-              />
-              <path d="M45 260 L20 270 M45 260 L25 258" stroke={pal.eagleSecondary} strokeWidth="2" />
-
-              {/* 3. LION REAR LEGS & THIGHS */}
-              <path
-                d="M95 160 C75 165, 65 190, 80 215 C85 225, 100 220, 105 200 C110 180, 110 165, 95 160 Z"
-                fill={pal.lionShade}
-              />
-              {/* Rear Lion Paw */}
-              <path d="M80 215 Q70 225 60 220" stroke={pal.lionShade} strokeWidth="6" strokeLinecap="round" />
-
-              {/* 4. MAIN GRIFFIN TORSO & EAGLE CHEST */}
-              <path
-                d="M90 150 C110 140, 150 135, 180 145 C200 155, 210 175, 190 195 C160 205, 110 200, 90 180 C80 170, 80 155, 90 150 Z"
-                fill="url(#bodyGrad)"
-              />
-
-              {/* Neck & Chest Hackle Feathers */}
-              <path
-                d="M170 142 C160 155, 165 175, 185 185 M160 140 C150 155, 155 170, 175 180 M150 140 C140 152, 145 165, 165 175"
-                stroke={pal.eagleSecondary}
-                strokeWidth="3"
-                fill="none"
-              />
-
-              {/* 5. FRONT EAGLE LEGS & OBSIDIAN TALONS */}
-              {/* Front Right Leg */}
-              <path d="M185 180 L205 220 L220 230" stroke={pal.talons} strokeWidth="8" strokeLinecap="round" fill="none" />
-              {/* Front Left Leg */}
-              <path d="M175 185 L190 230 L205 242" stroke={pal.talons} strokeWidth="8" strokeLinecap="round" fill="none" />
-
-              {/* Sharp Obsidian Claws */}
-              <path d="M220 230 L235 228 M220 230 L234 236 M220 230 L226 242" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
-              <path d="M205 242 L220 240 M205 242 L218 248 M205 242 L210 252" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" />
-
-              {/* 6. NOBLE EAGLE HEAD & HOOKED GOLDEN BEAK */}
-              {/* Eagle Crown Feather Crest */}
-              <path
-                d="M185 130 C165 110, 140 100, 120 95 C145 115, 170 125, 190 135 Z"
-                fill={pal.eagleSecondary}
-              />
-              <path
-                d="M190 128 C175 112, 155 105, 135 102 C155 120, 175 128, 195 136 Z"
-                fill={pal.eaglePrimary}
-              />
-
-              {/* Eagle Head Contour */}
-              <path
-                d="M180 140 C190 120, 220 115, 240 130 C250 140, 245 155, 220 165 C195 170, 175 160, 180 140 Z"
-                fill={pal.eaglePrimary}
-              />
-
-              {/* Hooked Golden Eagle Beak */}
-              <path
-                d="M235 130 Q270 135 275 155 Q245 165 230 155 Z"
-                fill="url(#beakGrad)"
-              />
-              <path d="M235 145 L268 147" stroke="#78350f" strokeWidth="2.5" />
-              {/* Nostril Slit */}
-              <ellipse cx="245" cy="138" rx="3" ry="1.5" fill="#78350f" transform="rotate(-10 245 138)" />
-
-              {/* Fierce Eagle Eye & Brow */}
-              <path d="M210 128 L230 130" stroke={pal.eagleSecondary} strokeWidth="3.5" />
-              <circle cx="222" cy="138" r="7" fill={pal.eyes} />
-              <circle cx="223" cy="138" r="3.5" fill="#0f172a" />
-              <circle cx="225" cy="136" r="1.5" fill="#ffffff" />
-
-              {/* 7. NEAR FOREGROUND WING (IN FRONT OF BODY - MATCHING IMAGE 2) */}
-              <g
-                style={{
-                  transform: `rotate(${griffinTransform.wingAngle}deg)`,
-                  transformOrigin: '145px 145px',
-                  transition: 'transform 0.05s linear'
-                }}
-              >
-                {/* Main Soaring Wing Blade */}
-                <path
-                  d="M145 145 C120 70, 60 20, 10 0 C40 50, 85 100, 125 135 Z"
-                  fill="url(#wingGradNear)"
-                />
-                <path
-                  d="M145 145 C115 60, 55 15, 5 0 C30 45, 75 90, 118 130 Z"
-                  fill={pal.wingQuills}
-                  opacity="0.85"
-                />
-
-                {/* Primary Feather Lines & Quills */}
-                <path d="M30 20 Q65 60 115 115" stroke={pal.eagleSecondary} strokeWidth="3" />
-                <path d="M45 35 Q80 75 125 125" stroke={pal.eagleSecondary} strokeWidth="2.5" />
-                <path d="M65 55 Q95 90 135 132" stroke={pal.eagleSecondary} strokeWidth="2" />
-                <path d="M85 75 Q110 105 140 138" stroke={pal.eagleSecondary} strokeWidth="2" />
-
-                {/* Outer Feather Tip Teeth */}
-                <path
-                  d="M10 0 L25 15 M25 10 L40 25 M40 20 L55 38 M55 33 L70 52 M70 47 L85 68"
-                  stroke={pal.eaglePrimary}
-                  strokeWidth="2.5"
-                />
-              </g>
-            </svg>
+            <img
+              src={imageSrc}
+              alt="Golden Griffin Beast"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
           </div>
         </div>
       )}
