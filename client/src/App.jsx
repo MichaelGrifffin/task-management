@@ -22,7 +22,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   
-  // Theme & Background Griffin State
+  // Theme & Background Customizer State
   const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'midnight');
   const [bgColorMode, setBgColorMode] = useState(localStorage.getItem('app-bg-mode') || 'theme');
   const [customBgColor, setCustomBgColor] = useState(localStorage.getItem('app-custom-bg') || '#0b0f19');
@@ -33,19 +33,7 @@ export default function App() {
     localStorage.getItem('app-cursor-ring') !== 'false'
   );
 
-  // Griffin Customizer State
-  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'griffin');
-  const [griffinTheme, setGriffinTheme] = useState(localStorage.getItem('app-griffin-theme') || 'golden');
-  const [griffinSize, setGriffinSize] = useState(
-    parseFloat(localStorage.getItem('app-griffin-size')) || 1.0
-  );
-  const [griffinSpeed, setGriffinSpeed] = useState(
-    parseFloat(localStorage.getItem('app-griffin-speed')) || 1.0
-  );
-  const [enableFeatherSparks, setEnableFeatherSparks] = useState(
-    localStorage.getItem('app-feather-sparks') !== 'false'
-  );
-
+  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'particles');
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
 
   // Determine effective background color
@@ -295,16 +283,12 @@ export default function App() {
 
   return (
     <>
-      {/* Animated Canvas Background with Cursor Griffin Animation */}
+      {/* Animated Canvas Ambient Background */}
       <AnimatedBackground
         theme={theme}
         bgColor={getEffectiveBgColor()}
         enableCursorFx={enableCursorFx}
         bgAnimMode={bgAnimMode}
-        griffinTheme={griffinTheme}
-        griffinSize={griffinSize}
-        griffinSpeed={griffinSpeed}
-        enableFeatherSparks={enableFeatherSparks}
       />
 
       {/* Sleek Precision Cursor Follower Ring */}
