@@ -6,7 +6,7 @@ import {
   Plus, 
   Search, 
   Palette,
-  Feather,
+  Flower,
   LogOut, 
   User, 
   Wifi, 
@@ -32,51 +32,90 @@ export default function Navbar({
   setTheme
 }) {
   return (
-    <header className="glass-panel navbar-header" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '16px', padding: '16px 20px', width: '100%', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
-        
-        {/* Row 1: Logo, Search (Desktop center), and Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '16px', flexWrap: 'wrap' }}>
-          
-          {/* Brand Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--gradient-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--shadow-glow)',
-              flexShrink: 0
-            }}>
-              <CheckSquare size={20} color="#ffffff" />
-            </div>
-            <div>
-              <h1 className="brand-title" style={{ fontSize: '1.25rem', background: 'var(--gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.1 }}>
-                TaskMaster
-              </h1>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', letterSpacing: '0.05em' }}>WORKSPACE</span>
-            </div>
+    <header className="glass-panel navbar">
+      <div className="nav-container">
+        {/* Brand Logo & Name */}
+        <div className="nav-brand">
+          <div className="logo-icon">
+            <CheckSquare size={22} color="#ffffff" />
           </div>
+          <span className="brand-name">TaskMaster<span className="brand-badge">PRO</span></span>
+        </div>
 
-          {/* Desktop Search Bar */}
-          <div style={{ flex: '1 1 300px', maxWidth: '500px', position: 'relative' }}>
-            <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              className="input-field"
-              placeholder="Search tasks by title or tags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '36px', height: '38px', fontSize: '0.85rem', width: '100%', boxSizing: 'border-box' }}
-            />
+        {/* Search & Filtering Bar (Only visible when logged in) */}
+        {user && (
+          <div className="nav-search-bar">
+            {/* Search Input */}
+            <div className="search-input-wrapper">
+              <Search size={16} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search tasks by title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </div>
+
+            {/* Filter Dropdown: Status */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Status</option>
+              <option value="todo">To Do</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Completed</option>
+            </select>
+
+            {/* Filter Dropdown: Priority */}
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Priority</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
           </div>
+        )}
 
-          {/* Top Actions: Theme, Background Customizer Modal, WS, User */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto' }}>
-            
+        {/* View Switcher & Action Controls */}
+        <div className="nav-actions">
+          {user && (
+            <>
+              {/* View Switcher: Kanban vs List */}
+              <div className="view-toggle-group">
+                <button
+                  className={`btn-icon ${activeView === 'kanban' ? 'active' : ''}`}
+                  onClick={() => setActiveView('kanban')}
+                  title="Kanban Board View"
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button
+                  className={`btn-icon ${activeView === 'list' ? 'active' : ''}`}
+                  onClick={() => setActiveView('list')}
+                  title="List View"
+                >
+                  <List size={18} />
+                </button>
+              </div>
+
+              {/* Add New Task Button */}
+              <button className="btn btn-primary" onClick={onOpenNewTask}>
+                <Plus size={16} />
+                <span>New Task</span>
+              </button>
+            </>
+          )}
+
+          {/* Theme & Background Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Quick Theme Selector Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-surface)', padding: '4px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
               <Palette size={14} color="var(--primary)" />
@@ -96,11 +135,11 @@ export default function Navbar({
               </select>
             </div>
 
-            {/* Interactive Customizable Background & Griffin FX Button */}
+            {/* Interactive Customizable Background & Flower FX Button */}
             <button
               className="btn btn-primary"
               onClick={onOpenThemeModal}
-              title="Customize Griffin Animation, Feathers & Background FX"
+              title="Customize Cursor Flower Animation, Petals & Background FX"
               style={{
                 padding: '6px 14px',
                 fontSize: '0.8rem',
@@ -111,8 +150,8 @@ export default function Navbar({
                 boxShadow: '0 0 14px rgba(99, 102, 241, 0.4)'
               }}
             >
-              <Feather size={15} color="#ffffff" style={{ filter: 'drop-shadow(0 0 4px #fbbf24)' }} />
-              <span className="nav-theme-label" style={{ fontWeight: 700 }}>Griffin & FX</span>
+              <Flower size={15} color="#ffffff" style={{ filter: 'drop-shadow(0 0 4px #ec4899)' }} />
+              <span className="nav-theme-label" style={{ fontWeight: 700 }}>Flowers & FX</span>
             </button>
 
             {/* Live WS Status Dot */}
@@ -123,89 +162,22 @@ export default function Navbar({
 
             {/* User Auth / Logout */}
             {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: 'var(--gradient-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  color: '#fff',
-                  fontSize: '0.85rem'
-                }}>
-                  {user.username.charAt(0).toUpperCase()}
+              <div className="user-profile-badge">
+                <div className="avatar">
+                  <User size={14} color="var(--primary)" />
                 </div>
-                <button className="btn-icon" onClick={onLogout} title="Logout" style={{ padding: '6px' }}>
-                  <LogOut size={16} color="#ef4444" />
+                <span className="username">{user.username}</span>
+                <button className="btn-icon logout-btn" onClick={onLogout} title="Logout">
+                  <LogOut size={16} />
                 </button>
               </div>
             ) : (
-              <button className="btn btn-secondary" onClick={onOpenAuth} style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
-                <User size={14} /> Sign In
+              <button className="btn btn-secondary" onClick={onOpenAuth}>
+                Sign In
               </button>
             )}
-
           </div>
         </div>
-
-        {/* Row 2: View Switcher, Filters & Desktop New Task */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '12px', flexWrap: 'wrap' }}>
-          
-          {/* View Switcher */}
-          <div style={{ display: 'flex', background: 'var(--bg-surface)', padding: '3px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', minWidth: '220px' }}>
-            <button 
-              className={`btn ${activeView === 'kanban' ? 'btn-primary' : ''}`} 
-              onClick={() => setActiveView('kanban')}
-              style={{ flex: 1, padding: '6px 12px', fontSize: '0.8rem', background: activeView === 'kanban' ? undefined : 'transparent', color: activeView === 'kanban' ? undefined : 'var(--text-muted)' }}
-            >
-              <LayoutGrid size={14} /> Board View
-            </button>
-            <button 
-              className={`btn ${activeView === 'list' ? 'btn-primary' : ''}`} 
-              onClick={() => setActiveView('list')}
-              style={{ flex: 1, padding: '6px 12px', fontSize: '0.8rem', background: activeView === 'list' ? undefined : 'transparent', color: activeView === 'list' ? undefined : 'var(--text-muted)' }}
-            >
-              <List size={14} /> List View
-            </button>
-          </div>
-
-          {/* Priority & Status Filters */}
-          <div style={{ display: 'flex', gap: '8px', flex: '1 1 auto', maxWidth: '400px' }}>
-            <select
-              className="select-field"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              style={{ height: '36px', padding: '0 10px', fontSize: '0.8rem', flex: 1, boxSizing: 'border-box' }}
-            >
-              <option value="all">All Priorities</option>
-              <option value="low">Low Priority</option>
-              <option value="medium">Medium Priority</option>
-              <option value="high">High Priority</option>
-              <option value="urgent">Urgent Only</option>
-            </select>
-
-            <select
-              className="select-field"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ height: '36px', padding: '0 10px', fontSize: '0.8rem', flex: 1, boxSizing: 'border-box' }}
-            >
-              <option value="all">All Status</option>
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
-          {/* New Task Button (Desktop) */}
-          <button className="btn btn-primary nav-task-btn" onClick={onOpenNewTask} style={{ padding: '8px 16px', fontSize: '0.85rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <Plus size={16} /> + Task
-          </button>
-        </div>
-
       </div>
     </header>
   );

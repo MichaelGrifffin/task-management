@@ -4,15 +4,16 @@ export default function AnimatedBackground({
   theme = 'midnight',
   bgColor = null,
   enableCursorFx = true,
-  bgAnimMode = 'griffin', // 'griffin' | 'particles' | 'hybrid'
-  griffinTheme = 'golden', // 'golden' | 'silver' | 'crimson' | 'void' | 'emerald'
-  griffinSize = 1.0, // 0.7 to 1.5 multiplier
-  griffinSpeed = 1.0, // 0.6 to 1.8 multiplier
-  enableFeatherSparks = true
+  bgAnimMode = 'flowers', // 'flowers' | 'particles' | 'hybrid' | 'none'
+  flowerTheme = 'sakura', // 'sakura' | 'rose' | 'sunflower' | 'lotus' | 'emerald'
+  flowerSize = 1.0, // 0.7 to 1.5 multiplier
+  flowerDensity = 1.0, // 0.6 to 1.8 multiplier
+  enablePetalSparks = true
 }) {
   const canvasRef = useRef(null);
   const clickRingsRef = useRef([]);
-  const featherParticlesRef = useRef([]);
+  const bloomingFlowersRef = useRef([]);
+  const driftingPetalsRef = useRef([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,16 +30,9 @@ export default function AnimatedBackground({
       y: height / 2,
       targetX: width / 2,
       targetY: height / 2,
-      active: false,
+      lastX: width / 2,
+      lastY: height / 2,
       isClicking: false
-    };
-
-    const griffin = {
-      x: width / 2,
-      y: height / 2,
-      vx: 0,
-      vy: 0,
-      angle: 0
     };
 
     const handleResize = () => {
@@ -49,50 +43,70 @@ export default function AnimatedBackground({
     const handleMouseMove = (e) => {
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
-      mouse.active = true;
     };
 
     const handleTouchMove = (e) => {
       if (e.touches && e.touches[0]) {
         mouse.targetX = e.touches[0].clientX;
         mouse.targetY = e.touches[0].clientY;
-        mouse.active = true;
       }
     };
 
     const handleMouseDown = (e) => {
       mouse.isClicking = true;
+      const flowerPal = getFlowerPalette(flowerTheme);
 
-      // Spawn interactive sky sunbeam ring on click
+      // Spawn interactive floral shockwave ring on click
       if (enableCursorFx) {
         clickRingsRef.current.push({
           x: e.clientX,
           y: e.clientY,
           radius: 5,
-          maxRadius: 200,
+          maxRadius: 220,
           alpha: 1.0,
-          color: getGriffinPalette(griffinTheme).featherGlow
+          color: flowerPal.glow
         });
       }
 
-      // Spawn glowing feather particles on click
-      if (enableFeatherSparks) {
-        for (let i = 0; i < 22; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 6.5 + 2;
-          featherParticlesRef.current.push({
-            x: mouse.targetX,
-            y: mouse.targetY,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            size: Math.random() * 5 + 2,
-            length: Math.random() * 12 + 6,
+      // Massive Floral Bloom Burst on Click
+      if (bgAnimMode === 'flowers' || bgAnimMode === 'hybrid') {
+        // Spawn 3 central blooming flowers
+        for (let b = 0; b < 3; b++) {
+          bloomingFlowersRef.current.push({
+            x: e.clientX + (Math.random() - 0.5) * 30,
+            y: e.clientY + (Math.random() - 0.5) * 30,
+            radius: 0,
+            maxRadius: (Math.random() * 16 + 22) * flowerSize,
             rotation: Math.random() * Math.PI * 2,
-            vRot: (Math.random() - 0.5) * 0.1,
+            vRot: (Math.random() - 0.5) * 0.04,
+            petalCount: Math.floor(Math.random() * 3) + 5,
             alpha: 1.0,
-            decay: Math.random() * 0.025 + 0.012,
-            color: Math.random() > 0.4 ? getGriffinPalette(griffinTheme).featherGlow : getGriffinPalette(griffinTheme).eaglePrimary
+            decay: Math.random() * 0.008 + 0.006,
+            color: flowerPal.primary,
+            secondaryColor: flowerPal.secondary,
+            pistilColor: flowerPal.pistil
           });
+        }
+
+        // Burst of 28 swirling petals & pollen sparks
+        if (enablePetalSparks) {
+          for (let i = 0; i < 28; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 7 + 2.5;
+            driftingPetalsRef.current.push({
+              x: e.clientX,
+              y: e.clientY,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed - 0.5,
+              size: Math.random() * 6 + 4,
+              length: Math.random() * 14 + 8,
+              rotation: Math.random() * Math.PI * 2,
+              vRot: (Math.random() - 0.5) * 0.1,
+              alpha: 1.0,
+              decay: Math.random() * 0.02 + 0.01,
+              color: Math.random() > 0.3 ? flowerPal.petal : flowerPal.glow
+            });
+          }
         }
       }
     };
@@ -101,18 +115,13 @@ export default function AnimatedBackground({
       mouse.isClicking = false;
     };
 
-    const handleMouseLeave = () => {
-      mouse.active = false;
-    };
-
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mouseleave', handleMouseLeave);
 
-    // UI Theme Backgrounds
+    // UI Theme Background Colors
     const getThemeColors = (t) => {
       switch (t) {
         case 'emerald':
@@ -135,7 +144,7 @@ export default function AnimatedBackground({
       }
     };
 
-    // Background particle system
+    // Particle mesh background
     const numParticles = Math.min(Math.floor(width * 0.045), 50);
     const particles = [];
     for (let i = 0; i < numParticles; i++) {
@@ -149,22 +158,28 @@ export default function AnimatedBackground({
       });
     }
 
-    // MAIN CANVAS RENDER LOOP
+    // MAIN RENDER LOOP
     const draw = () => {
       const themePal = getThemeColors(theme);
-      const griffinPal = getGriffinPalette(griffinTheme);
+      const flowerPal = getFlowerPalette(flowerTheme);
       const effectiveBg = bgColor || themePal.bg;
 
-      mouse.x += (mouse.targetX - mouse.x) * 0.15;
-      mouse.y += (mouse.targetY - mouse.y) * 0.15;
+      // Smooth cursor lerp
+      mouse.x += (mouse.targetX - mouse.x) * 0.18;
+      mouse.y += (mouse.targetY - mouse.y) * 0.18;
+
+      const mouseDist = Math.sqrt(
+        (mouse.x - mouse.lastX) * (mouse.x - mouse.lastX) +
+          (mouse.y - mouse.lastY) * (mouse.y - mouse.lastY)
+      );
 
       ctx.clearRect(0, 0, width, height);
 
-      // Base background fill
+      // Base fill
       ctx.fillStyle = effectiveBg;
       ctx.fillRect(0, 0, width, height);
 
-      // Radial ambient background glows
+      // Ambient radial space glow
       const g1 = ctx.createRadialGradient(width * 0.3, height * 0.3, 0, width * 0.3, height * 0.3, width * 0.55);
       g1.addColorStop(0, themePal.grad1);
       g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -178,40 +193,42 @@ export default function AnimatedBackground({
       ctx.fillRect(0, 0, width, height);
 
       // Particle mesh background
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+      if (bgAnimMode === 'particles' || bgAnimMode === 'hybrid') {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = themePal.line.replace('0.3', (0.2 * (1 - dist / 120)).toString());
-            ctx.lineWidth = 0.7;
-            ctx.stroke();
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = themePal.line.replace('0.3', (0.2 * (1 - dist / 120)).toString());
+              ctx.lineWidth = 0.7;
+              ctx.stroke();
+            }
           }
         }
+
+        particles.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = themePal.particle;
+          ctx.shadowColor = themePal.glow;
+          ctx.shadowBlur = 8;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        });
       }
 
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = themePal.particle;
-        ctx.shadowColor = themePal.glow;
-        ctx.shadowBlur = 8;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
-
-      // Draw click sunbeam shockwaves
+      // Draw click shockwaves
       for (let i = clickRingsRef.current.length - 1; i >= 0; i--) {
         const ring = clickRingsRef.current[i];
         ring.radius += 7.5;
@@ -224,78 +241,154 @@ export default function AnimatedBackground({
 
         ctx.beginPath();
         ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = ring.color || themePal.glow;
+        ctx.strokeStyle = ring.color;
         ctx.globalAlpha = ring.alpha;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.8;
         ctx.stroke();
         ctx.globalAlpha = 1.0;
       }
 
-      // Cursor position physics update
-      const dx = mouse.x - griffin.x;
-      const dy = mouse.y - griffin.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const targetAngle = Math.atan2(dy, dx);
-      griffin.angle += (targetAngle - griffin.angle) * 0.08 * griffinSpeed;
-      griffin.x += (Math.cos(griffin.angle) * Math.min(dist * 0.075, 11) - griffin.vx) * 0.12;
-      griffin.y += (Math.sin(griffin.angle) * Math.min(dist * 0.075, 11) - griffin.vy) * 0.12;
+      // SPAWN CURSOR FLOWER TRAIL ACCORDING TO MOUSE MOVEMENT
+      if ((bgAnimMode === 'flowers' || bgAnimMode === 'hybrid') && mouseDist > 12 / flowerDensity) {
+        bloomingFlowersRef.current.push({
+          x: mouse.x,
+          y: mouse.y,
+          radius: 0,
+          maxRadius: (Math.random() * 14 + 16) * flowerSize,
+          rotation: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.03,
+          petalCount: Math.floor(Math.random() * 3) + 5,
+          alpha: 1.0,
+          decay: Math.random() * 0.012 + 0.008,
+          color: flowerPal.primary,
+          secondaryColor: flowerPal.secondary,
+          pistilColor: flowerPal.pistil
+        });
 
-      // Spawn gliding feather particles near cursor
-      if (enableFeatherSparks && (enableCursorFx || mouse.isClicking)) {
-        if (mouse.isClicking || (dist > 60 && Math.random() < 0.25)) {
-          featherParticlesRef.current.push({
-            x: mouse.x + (Math.random() - 0.5) * 40,
-            y: mouse.y + (Math.random() - 0.5) * 40,
-            vx: (Math.random() - 0.5) * 2.2,
-            vy: (Math.random() - 0.5) * 2.2,
-            size: Math.random() * 4 + 2,
+        // Spawn drifting petal sparks along cursor path
+        if (enablePetalSparks && Math.random() < 0.6) {
+          driftingPetalsRef.current.push({
+            x: mouse.x,
+            y: mouse.y,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2 - 0.5,
+            size: Math.random() * 5 + 3,
             length: Math.random() * 10 + 6,
             rotation: Math.random() * Math.PI * 2,
             vRot: (Math.random() - 0.5) * 0.08,
             alpha: 1.0,
-            decay: Math.random() * 0.03 + 0.015,
-            color: griffinPal.featherGlow
+            decay: Math.random() * 0.02 + 0.012,
+            color: Math.random() > 0.4 ? flowerPal.petal : flowerPal.glow
           });
         }
+
+        mouse.lastX = mouse.x;
+        mouse.lastY = mouse.y;
       }
 
-      // Draw Falling Feathers
-      for (let i = featherParticlesRef.current.length - 1; i >= 0; i--) {
-        const p = featherParticlesRef.current[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rotation += p.vRot;
-        p.alpha -= p.decay;
+      // -------------------------------------------------------------
+      // RENDER BLOOMING FLOWERS TRAIL
+      // -------------------------------------------------------------
+      if (bgAnimMode === 'flowers' || bgAnimMode === 'hybrid') {
+        for (let i = bloomingFlowersRef.current.length - 1; i >= 0; i--) {
+          const fl = bloomingFlowersRef.current[i];
 
-        if (p.alpha <= 0) {
-          featherParticlesRef.current.splice(i, 1);
-          continue;
+          // Grow radius & rotate
+          fl.radius += (fl.maxRadius - fl.radius) * 0.12;
+          fl.rotation += fl.vRot;
+          fl.alpha -= fl.decay;
+
+          if (fl.alpha <= 0) {
+            bloomingFlowersRef.current.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(fl.x, fl.y);
+          ctx.rotate(fl.rotation);
+          ctx.globalAlpha = fl.alpha;
+
+          // Draw Flower Petals (5 to 8 layered petals)
+          const angleStep = (Math.PI * 2) / fl.petalCount;
+          for (let p = 0; p < fl.petalCount; p++) {
+            ctx.save();
+            ctx.rotate(p * angleStep);
+
+            // Outer Petal Curve
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(-fl.radius * 0.5, -fl.radius * 0.8, 0, -fl.radius);
+            ctx.quadraticCurveTo(fl.radius * 0.5, -fl.radius * 0.8, 0, 0);
+            ctx.fillStyle = fl.color;
+            ctx.fill();
+
+            // Inner Petal Layer Highlight
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(-fl.radius * 0.3, -fl.radius * 0.5, 0, -fl.radius * 0.65);
+            ctx.quadraticCurveTo(fl.radius * 0.3, -fl.radius * 0.5, 0, 0);
+            ctx.fillStyle = fl.secondaryColor;
+            ctx.fill();
+
+            ctx.restore();
+          }
+
+          // Center Pistil / Stamen
+          ctx.beginPath();
+          ctx.arc(0, 0, fl.radius * 0.28, 0, Math.PI * 2);
+          ctx.fillStyle = fl.pistilColor;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(0, 0, fl.radius * 0.15, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+
+          ctx.globalAlpha = 1.0;
+          ctx.restore();
         }
 
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
+        // -------------------------------------------------------------
+        // RENDER SWIRLING PETALS & POLLEN PARTICLES
+        // -------------------------------------------------------------
+        for (let i = driftingPetalsRef.current.length - 1; i >= 0; i--) {
+          const pt = driftingPetalsRef.current[i];
+          pt.x += pt.vx;
+          pt.y += pt.vy;
+          pt.rotation += pt.vRot;
+          pt.alpha -= pt.decay;
 
-        ctx.beginPath();
-        ctx.moveTo(0, -p.length / 2);
-        ctx.quadraticCurveTo(p.size, 0, 0, p.length / 2);
-        ctx.quadraticCurveTo(-p.size, 0, 0, -p.length / 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.fill();
+          if (pt.alpha <= 0) {
+            driftingPetalsRef.current.splice(i, 1);
+            continue;
+          }
 
-        ctx.beginPath();
-        ctx.moveTo(0, -p.length / 2);
-        ctx.lineTo(0, p.length / 2);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
+          ctx.save();
+          ctx.translate(pt.x, pt.y);
+          ctx.rotate(pt.rotation);
+          ctx.globalAlpha = pt.alpha;
 
-        ctx.globalAlpha = 1.0;
-        ctx.restore();
+          // Petal Curve
+          ctx.beginPath();
+          ctx.moveTo(0, -pt.length / 2);
+          ctx.quadraticCurveTo(pt.size, 0, 0, pt.length / 2);
+          ctx.quadraticCurveTo(-pt.size, 0, 0, -pt.length / 2);
+          ctx.fillStyle = pt.color;
+          ctx.fill();
+
+          // Petal Center Vein
+          ctx.beginPath();
+          ctx.moveTo(0, -pt.length / 2);
+          ctx.lineTo(0, pt.length / 2);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+
+          ctx.globalAlpha = 1.0;
+          ctx.restore();
+        }
       }
 
-      // NOTE: NO Griffin creature beast is rendered on canvas. Only clean canvas particle background.
       animationFrameId = requestAnimationFrame(draw);
     };
 
@@ -307,7 +400,6 @@ export default function AnimatedBackground({
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, [
@@ -315,10 +407,10 @@ export default function AnimatedBackground({
     bgColor,
     enableCursorFx,
     bgAnimMode,
-    griffinTheme,
-    griffinSize,
-    griffinSpeed,
-    enableFeatherSparks
+    flowerTheme,
+    flowerSize,
+    flowerDensity,
+    enablePetalSparks
   ]);
 
   return (
@@ -337,69 +429,49 @@ export default function AnimatedBackground({
   );
 }
 
-// Color Palettes
-function getGriffinPalette(gt) {
-  switch (gt) {
-    case 'silver':
+// Flower Color Palettes
+function getFlowerPalette(ft) {
+  switch (ft) {
+    case 'rose':
       return {
-        eaglePrimary: '#f1f5f9',
-        eagleSecondary: '#cbd5e1',
-        lionBody: '#94a3b8',
-        lionShade: '#64748b',
-        beak: '#fbbf24',
-        eyes: '#38bdf8',
-        featherGlow: '#7dd3fc',
-        wingQuills: '#ffffff',
-        talons: '#e2e8f0'
+        primary: '#ef4444',
+        secondary: '#dc2626',
+        pistil: '#facc15',
+        glow: '#f87171',
+        petal: '#f87171'
       };
-    case 'crimson':
+    case 'sunflower':
       return {
-        eaglePrimary: '#dc2626',
-        eagleSecondary: '#991b1b',
-        lionBody: '#ea580c',
-        lionShade: '#c2410c',
-        beak: '#facc15',
-        eyes: '#fef08a',
-        featherGlow: '#f87171',
-        wingQuills: '#ef4444',
-        talons: '#fbbf24'
+        primary: '#fbbf24',
+        secondary: '#f59e0b',
+        pistil: '#78350f',
+        glow: '#fde047',
+        petal: '#fbbf24'
       };
-    case 'void':
+    case 'lotus':
       return {
-        eaglePrimary: '#9333ea',
-        eagleSecondary: '#6b21a8',
-        lionBody: '#334155',
-        lionShade: '#1e293b',
-        beak: '#06b6d4',
-        eyes: '#f0abfc',
-        featherGlow: '#e879f9',
-        wingQuills: '#c084fc',
-        talons: '#38bdf8'
+        primary: '#c084fc',
+        secondary: '#9333ea',
+        pistil: '#38bdf8',
+        glow: '#e879f9',
+        petal: '#c084fc'
       };
     case 'emerald':
       return {
-        eaglePrimary: '#059669',
-        eagleSecondary: '#047857',
-        lionBody: '#b45309',
-        lionShade: '#78350f',
-        beak: '#fbbf24',
-        eyes: '#34d399',
-        featherGlow: '#6ee7b7',
-        wingQuills: '#10b981',
-        talons: '#f59e0b'
+        primary: '#34d399',
+        secondary: '#10b981',
+        pistil: '#fde047',
+        glow: '#6ee7b7',
+        petal: '#34d399'
       };
-    case 'golden':
+    case 'sakura':
     default:
       return {
-        eaglePrimary: '#f59e0b',
-        eagleSecondary: '#d97706',
-        lionBody: '#d97706',
-        lionShade: '#92400e',
-        beak: '#fbbf24',
-        eyes: '#ef4444',
-        featherGlow: '#fde047',
-        wingQuills: '#fef08a',
-        talons: '#fbbf24'
+        primary: '#f472b6',
+        secondary: '#ec4899',
+        pistil: '#fef08a',
+        glow: '#fbcfe8',
+        petal: '#f472b6'
       };
   }
 }

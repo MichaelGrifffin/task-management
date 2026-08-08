@@ -8,7 +8,7 @@ import AuthModal from './components/AuthModal';
 import AnimatedBackground from './components/AnimatedBackground';
 import CursorFollower from './components/CursorFollower';
 import ThemeSelectorModal from './components/ThemeSelectorModal';
-import { Sparkles, CheckCircle2, Loader2, Plus, Feather } from 'lucide-react';
+import { Sparkles, CheckCircle2, Loader2, Plus, Flower } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -22,7 +22,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   
-  // Theme & Background Griffin State
+  // Theme & Background State
   const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'midnight');
   const [bgColorMode, setBgColorMode] = useState(localStorage.getItem('app-bg-mode') || 'theme');
   const [customBgColor, setCustomBgColor] = useState(localStorage.getItem('app-custom-bg') || '#0b0f19');
@@ -33,17 +33,17 @@ export default function App() {
     localStorage.getItem('app-cursor-ring') !== 'false'
   );
 
-  // Griffin Customizer State
-  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'griffin');
-  const [griffinTheme, setGriffinTheme] = useState(localStorage.getItem('app-griffin-theme') || 'golden');
-  const [griffinSize, setGriffinSize] = useState(
-    parseFloat(localStorage.getItem('app-griffin-size')) || 1.0
+  // Cursor Flower Customizer State
+  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'flowers');
+  const [flowerTheme, setFlowerTheme] = useState(localStorage.getItem('app-flower-theme') || 'sakura');
+  const [flowerSize, setFlowerSize] = useState(
+    parseFloat(localStorage.getItem('app-flower-size')) || 1.0
   );
-  const [griffinSpeed, setGriffinSpeed] = useState(
-    parseFloat(localStorage.getItem('app-griffin-speed')) || 1.0
+  const [flowerDensity, setFlowerDensity] = useState(
+    parseFloat(localStorage.getItem('app-flower-density')) || 1.0
   );
-  const [enableFeatherSparks, setEnableFeatherSparks] = useState(
-    localStorage.getItem('app-feather-sparks') !== 'false'
+  const [enablePetalSparks, setEnablePetalSparks] = useState(
+    localStorage.getItem('app-petal-sparks') !== 'false'
   );
 
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
@@ -96,20 +96,20 @@ export default function App() {
   }, [bgAnimMode]);
 
   useEffect(() => {
-    localStorage.setItem('app-griffin-theme', griffinTheme);
-  }, [griffinTheme]);
+    localStorage.setItem('app-flower-theme', flowerTheme);
+  }, [flowerTheme]);
 
   useEffect(() => {
-    localStorage.setItem('app-griffin-size', griffinSize.toString());
-  }, [griffinSize]);
+    localStorage.setItem('app-flower-size', flowerSize.toString());
+  }, [flowerSize]);
 
   useEffect(() => {
-    localStorage.setItem('app-griffin-speed', griffinSpeed.toString());
-  }, [griffinSpeed]);
+    localStorage.setItem('app-flower-density', flowerDensity.toString());
+  }, [flowerDensity]);
 
   useEffect(() => {
-    localStorage.setItem('app-feather-sparks', enableFeatherSparks.toString());
-  }, [enableFeatherSparks]);
+    localStorage.setItem('app-petal-sparks', enablePetalSparks.toString());
+  }, [enablePetalSparks]);
 
   // Auth User Check
   useEffect(() => {
@@ -220,7 +220,6 @@ export default function App() {
   };
 
   const handleMoveTask = async (taskId, newStatus) => {
-    // Optimistic UI update
     setTasks((prev) =>
       prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t))
     );
@@ -276,16 +275,16 @@ export default function App() {
 
   return (
     <>
-      {/* Animated Canvas Background with Cursor FX */}
+      {/* Animated Canvas Background with Cursor Flower Animation */}
       <AnimatedBackground
         theme={theme}
         bgColor={getEffectiveBgColor()}
         enableCursorFx={enableCursorFx}
         bgAnimMode={bgAnimMode}
-        griffinTheme={griffinTheme}
-        griffinSize={griffinSize}
-        griffinSpeed={griffinSpeed}
-        enableFeatherSparks={enableFeatherSparks}
+        flowerTheme={flowerTheme}
+        flowerSize={flowerSize}
+        flowerDensity={flowerDensity}
+        enablePetalSparks={enablePetalSparks}
       />
 
       {/* Sleek Precision Cursor Follower Ring */}
@@ -361,7 +360,7 @@ export default function App() {
               TaskMaster Pro
             </h1>
             <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginBottom: '32px', lineHeight: 1.6 }}>
-              A high-performance real-time task management workstation with live WebSockets sync, Kanban drag-and-drop, and interactive customizable background controls.
+              A high-performance real-time task management workstation with live WebSockets sync, Kanban drag-and-drop, and interactive cursor-based flower background animations.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
               <button className="btn btn-primary" onClick={() => setIsAuthModalOpen(true)} style={{ padding: '12px 28px', fontSize: '1rem' }}>
@@ -372,13 +371,13 @@ export default function App() {
             {/* Key Features Overview Pills */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <CheckCircle2 size={15} color="var(--primary)" /> Cursor Flower Animation
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets Sync
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Kanban Drag & Drop
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Customizable Background & FX
+                <CheckCircle2 size={15} color="var(--primary)" /> Customizable Background & Themes
               </div>
             </div>
           </div>
@@ -388,7 +387,7 @@ export default function App() {
         <button
           onClick={() => setIsThemeModalOpen(true)}
           className="glass-panel"
-          title="Quick Customize Griffin & Background"
+          title="Quick Customize Flowers & Background"
           style={{
             position: 'fixed',
             bottom: '24px',
@@ -409,8 +408,8 @@ export default function App() {
             transition: 'all 0.25 ease'
           }}
         >
-          <Feather size={18} color="var(--primary)" style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }} />
-          <span>Background & Griffin</span>
+          <Flower size={18} color="var(--primary)" style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }} />
+          <span>Background & Flowers</span>
         </button>
 
         {/* Mobile Floating Action Button (FAB) for logged-in users */}
@@ -436,7 +435,7 @@ export default function App() {
           onAuthSuccess={handleAuthSuccess}
         />
 
-        {/* Theme & Background Griffin Selector Modal */}
+        {/* Theme & Background Flower Selector Modal */}
         <ThemeSelectorModal
           isOpen={isThemeModalOpen}
           onClose={() => setIsThemeModalOpen(false)}
@@ -452,14 +451,14 @@ export default function App() {
           setEnableCursorRing={setEnableCursorRing}
           bgAnimMode={bgAnimMode}
           setBgAnimMode={setBgAnimMode}
-          griffinTheme={griffinTheme}
-          setGriffinTheme={setGriffinTheme}
-          griffinSize={griffinSize}
-          setGriffinSize={setGriffinSize}
-          griffinSpeed={griffinSpeed}
-          setGriffinSpeed={setGriffinSpeed}
-          enableFeatherSparks={enableFeatherSparks}
-          setEnableFeatherSparks={setEnableFeatherSparks}
+          flowerTheme={flowerTheme}
+          setFlowerTheme={setFlowerTheme}
+          flowerSize={flowerSize}
+          setFlowerSize={setFlowerSize}
+          flowerDensity={flowerDensity}
+          setFlowerDensity={setFlowerDensity}
+          enablePetalSparks={enablePetalSparks}
+          setEnablePetalSparks={setEnablePetalSparks}
         />
       </div>
     </>

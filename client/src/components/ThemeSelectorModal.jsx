@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Palette, Sparkles, Check, Pipette, MousePointer, Zap, Feather, Sliders } from 'lucide-react';
+import { X, Palette, Sparkles, Check, Pipette, MousePointer, Zap, Flower, Sliders } from 'lucide-react';
 
 export default function ThemeSelectorModal({
   isOpen,
@@ -14,16 +14,16 @@ export default function ThemeSelectorModal({
   setEnableCursorFx,
   enableCursorRing,
   setEnableCursorRing,
-  bgAnimMode = 'griffin',
+  bgAnimMode = 'flowers',
   setBgAnimMode,
-  griffinTheme = 'golden',
-  setGriffinTheme,
-  griffinSize = 1.0,
-  setGriffinSize,
-  griffinSpeed = 1.0,
-  setGriffinSpeed,
-  enableFeatherSparks = true,
-  setEnableFeatherSparks
+  flowerTheme = 'sakura',
+  setFlowerTheme,
+  flowerSize = 1.0,
+  setFlowerSize,
+  flowerDensity = 1.0,
+  setFlowerDensity,
+  enablePetalSparks = true,
+  setEnablePetalSparks
 }) {
   if (!isOpen) return null;
 
@@ -38,12 +38,12 @@ export default function ThemeSelectorModal({
     { id: 'noir', name: 'Cyber Noir', primary: '#e4e4e7', secondary: '#a1a1aa', bg: '#000000' }
   ];
 
-  const griffinElements = [
-    { id: 'golden', name: '🦅 Golden Celestial', primary: '#fbbf24', secondary: '#f59e0b' },
-    { id: 'silver', name: '⚔️ Silver Frost', primary: '#e2e8f0', secondary: '#38bdf8' },
-    { id: 'crimson', name: '🔥 Phoenix Crimson', primary: '#ef4444', secondary: '#f97316' },
-    { id: 'void', name: '🌌 Void Star', primary: '#c084fc', secondary: '#f0abfc' },
-    { id: 'emerald', name: '🌿 Emerald Forest', primary: '#10b981', secondary: '#d97706' }
+  const flowerStyles = [
+    { id: 'sakura', name: '🌸 Cherry Blossom', primary: '#f472b6', secondary: '#ec4899' },
+    { id: 'rose', name: '🌺 Crimson Hibiscus', primary: '#ef4444', secondary: '#dc2626' },
+    { id: 'sunflower', name: '🌼 Golden Sunflower', primary: '#fbbf24', secondary: '#f59e0b' },
+    { id: 'lotus', name: '🪷 Violet Lotus', primary: '#c084fc', secondary: '#9333ea' },
+    { id: 'emerald', name: '🌿 Emerald Orchid', primary: '#34d399', secondary: '#10b981' }
   ];
 
   const bgPresets = [
@@ -80,12 +80,12 @@ export default function ThemeSelectorModal({
               justifyContent: 'center',
               boxShadow: 'var(--shadow-glow)'
             }}>
-              <Feather size={22} color="#ffffff" />
+              <Flower size={22} color="#ffffff" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Background & Griffin Customizer</h2>
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Background & Flower Customizer</h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                Control Griffin animations, wings & feathers, background colors, and cursor FX
+                Control cursor flower blooms, swirling petals, background colors, and theme FX
               </p>
             </div>
           </div>
@@ -94,19 +94,19 @@ export default function ThemeSelectorModal({
           </button>
         </div>
 
-        {/* Section 1: Background Animation Mode */}
+        {/* Section 1: Background Canvas Mode */}
         <div style={{ marginBottom: '20px' }}>
           <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-            <Zap size={15} color="var(--primary)" /> Canvas Background Mode
+            <Zap size={15} color="var(--primary)" /> Canvas Animation Mode
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             <button
-              onClick={() => setBgAnimMode && setBgAnimMode('griffin')}
-              className={`btn ${bgAnimMode === 'griffin' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setBgAnimMode && setBgAnimMode('flowers')}
+              className={`btn ${bgAnimMode === 'flowers' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
             >
-              <span style={{ fontSize: '1.2rem' }}>🦅</span>
-              <span>Griffin Only</span>
+              <span style={{ fontSize: '1.2rem' }}>🌸</span>
+              <span>Flowers Trail</span>
             </button>
             <button
               onClick={() => setBgAnimMode && setBgAnimMode('hybrid')}
@@ -114,7 +114,7 @@ export default function ThemeSelectorModal({
               style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
             >
               <span style={{ fontSize: '1.2rem' }}>✨</span>
-              <span>Hybrid Griffin</span>
+              <span>Hybrid Flower & Mesh</span>
             </button>
             <button
               onClick={() => setBgAnimMode && setBgAnimMode('particles')}
@@ -127,32 +127,32 @@ export default function ThemeSelectorModal({
           </div>
         </div>
 
-        {/* Section 2: Griffin Customization */}
-        {(bgAnimMode === 'griffin' || bgAnimMode === 'hybrid') && (
+        {/* Section 2: Cursor Flower Customization */}
+        {(bgAnimMode === 'flowers' || bgAnimMode === 'hybrid') && (
           <div style={{
             marginBottom: '20px',
             padding: '14px',
-            background: 'rgba(99, 102, 241, 0.06)',
+            background: 'rgba(236, 72, 153, 0.08)',
             borderRadius: 'var(--radius-md)',
-            border: '1px solid rgba(99, 102, 241, 0.2)'
+            border: '1px solid rgba(236, 72, 153, 0.25)'
           }}>
             <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-              <Feather size={15} color="var(--primary)" /> Griffin Element & Feather Style
+              <Flower size={15} color="#ec4899" /> Floral Petal Style & Palette
             </label>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '8px', marginBottom: '14px' }}>
-              {griffinElements.map((el) => {
-                const isSel = griffinTheme === el.id;
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '8px', marginBottom: '14px' }}>
+              {flowerStyles.map((fl) => {
+                const isSel = flowerTheme === fl.id;
                 return (
                   <button
-                    key={el.id}
-                    onClick={() => setGriffinTheme && setGriffinTheme(el.id)}
+                    key={fl.id}
+                    onClick={() => setFlowerTheme && setFlowerTheme(fl.id)}
                     style={{
                       padding: '8px 6px',
                       fontSize: '0.75rem',
                       fontWeight: 600,
                       borderRadius: 'var(--radius-sm)',
-                      border: isSel ? `2px solid ${el.primary}` : '1px solid var(--border-color)',
+                      border: isSel ? `2px solid ${fl.primary}` : '1px solid var(--border-color)',
                       background: isSel ? 'var(--bg-glass-hover)' : 'var(--bg-surface)',
                       color: 'var(--text-main)',
                       cursor: 'pointer',
@@ -161,55 +161,55 @@ export default function ThemeSelectorModal({
                       gap: '4px'
                     }}
                   >
-                    <span>{el.name}</span>
+                    <span>{fl.name}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Wingspan / Size & Speed Sliders */}
+            {/* Bloom Size & Trail Density Sliders */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Sliders size={13} /> Size:</span>
-                  <span>{Math.round(griffinSize * 100)}%</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Sliders size={13} /> Bloom Size:</span>
+                  <span>{Math.round(flowerSize * 100)}%</span>
                 </div>
                 <input
                   type="range"
                   min="0.7"
                   max="1.5"
                   step="0.05"
-                  value={griffinSize}
-                  onChange={(e) => setGriffinSize && setGriffinSize(parseFloat(e.target.value))}
+                  value={flowerSize}
+                  onChange={(e) => setFlowerSize && setFlowerSize(parseFloat(e.target.value))}
                   style={{ width: '100%', cursor: 'pointer' }}
                 />
               </div>
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Zap size={13} /> Speed:</span>
-                  <span>{Math.round(griffinSpeed * 100)}%</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Zap size={13} /> Trail Density:</span>
+                  <span>{Math.round(flowerDensity * 100)}%</span>
                 </div>
                 <input
                   type="range"
                   min="0.6"
                   max="1.8"
                   step="0.1"
-                  value={griffinSpeed}
-                  onChange={(e) => setGriffinSpeed && setGriffinSpeed(parseFloat(e.target.value))}
+                  value={flowerDensity}
+                  onChange={(e) => setFlowerDensity && setFlowerDensity(parseFloat(e.target.value))}
                   style={{ width: '100%', cursor: 'pointer' }}
                 />
               </div>
             </div>
 
-            {/* Feather Sparks Toggle */}
+            {/* Petal Sparks Toggle */}
             <button
-              onClick={() => setEnableFeatherSparks && setEnableFeatherSparks(!enableFeatherSparks)}
-              className={`btn ${enableFeatherSparks ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setEnablePetalSparks && setEnablePetalSparks(!enablePetalSparks)}
+              className={`btn ${enablePetalSparks ? 'btn-primary' : 'btn-secondary'}`}
               style={{ width: '100%', padding: '8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-              <Check size={14} style={{ opacity: enableFeatherSparks ? 1 : 0 }} />
-              <span>Feather Sparks & Flight Trails</span>
+              <Check size={14} style={{ opacity: enablePetalSparks ? 1 : 0 }} />
+              <span>Swirling Petals & Pollen Sparks</span>
             </button>
           </div>
         )}
