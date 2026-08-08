@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Palette, Sparkles, Check, Pipette, MousePointer, Flame, Zap, Sliders } from 'lucide-react';
+import { X, Palette, Sparkles, Check, Pipette, MousePointer, Zap, Feather, Sliders } from 'lucide-react';
 
 export default function ThemeSelectorModal({
   isOpen,
@@ -14,16 +14,16 @@ export default function ThemeSelectorModal({
   setEnableCursorFx,
   enableCursorRing,
   setEnableCursorRing,
-  bgAnimMode = 'dragon',
+  bgAnimMode = 'griffin',
   setBgAnimMode,
-  dragonTheme = 'inferno',
-  setDragonTheme,
-  dragonSize = 1.0,
-  setDragonSize,
-  dragonSpeed = 1.0,
-  setDragonSpeed,
-  enableFireBreath = true,
-  setEnableFireBreath
+  griffinTheme = 'golden',
+  setGriffinTheme,
+  griffinSize = 1.0,
+  setGriffinSize,
+  griffinSpeed = 1.0,
+  setGriffinSpeed,
+  enableFeatherSparks = true,
+  setEnableFeatherSparks
 }) {
   if (!isOpen) return null;
 
@@ -38,12 +38,12 @@ export default function ThemeSelectorModal({
     { id: 'noir', name: 'Cyber Noir', primary: '#e4e4e7', secondary: '#a1a1aa', bg: '#000000' }
   ];
 
-  const dragonElements = [
-    { id: 'inferno', name: '🔥 Inferno Crimson', primary: '#ef4444', secondary: '#fb923c' },
-    { id: 'jade', name: '🐉 Jade Wyrm', primary: '#10b981', secondary: '#34d399' },
-    { id: 'void', name: '🌌 Void Nebula', primary: '#c084fc', secondary: '#f472b6' },
-    { id: 'solar', name: '☀️ Solar Gold', primary: '#f59e0b', secondary: '#fde047' },
-    { id: 'frost', name: '❄️ Frost Silver', primary: '#38bdf8', secondary: '#bae6fd' }
+  const griffinElements = [
+    { id: 'golden', name: '🦅 Golden Celestial', primary: '#fbbf24', secondary: '#f59e0b' },
+    { id: 'silver', name: '⚔️ Silver Frost', primary: '#e2e8f0', secondary: '#38bdf8' },
+    { id: 'crimson', name: '🔥 Phoenix Crimson', primary: '#ef4444', secondary: '#f97316' },
+    { id: 'void', name: '🌌 Void Star', primary: '#c084fc', secondary: '#f0abfc' },
+    { id: 'emerald', name: '🌿 Emerald Forest', primary: '#10b981', secondary: '#d97706' }
   ];
 
   const bgPresets = [
@@ -80,12 +80,12 @@ export default function ThemeSelectorModal({
               justifyContent: 'center',
               boxShadow: 'var(--shadow-glow)'
             }}>
-              <Flame size={22} color="#ffffff" />
+              <Feather size={22} color="#ffffff" />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Background & Dragon Customizer</h2>
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Background & Griffin Customizer</h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>
-                Control dragon animations, element styles, background colors, and cursor FX
+                Control Griffin animations, wings & feathers, background colors, and cursor FX
               </p>
             </div>
           </div>
@@ -101,20 +101,20 @@ export default function ThemeSelectorModal({
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             <button
-              onClick={() => setBgAnimMode && setBgAnimMode('dragon')}
-              className={`btn ${bgAnimMode === 'dragon' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setBgAnimMode && setBgAnimMode('griffin')}
+              className={`btn ${bgAnimMode === 'griffin' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
             >
-              <span style={{ fontSize: '1.2rem' }}>🐉</span>
-              <span>Dragon Only</span>
+              <span style={{ fontSize: '1.2rem' }}>🦅</span>
+              <span>Griffin Only</span>
             </button>
             <button
               onClick={() => setBgAnimMode && setBgAnimMode('hybrid')}
               className={`btn ${bgAnimMode === 'hybrid' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ padding: '10px 8px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
             >
-              <span style={{ fontSize: '1.2rem' }}>🔥</span>
-              <span>Hybrid Dragon</span>
+              <span style={{ fontSize: '1.2rem' }}>✨</span>
+              <span>Hybrid Griffin</span>
             </button>
             <button
               onClick={() => setBgAnimMode && setBgAnimMode('particles')}
@@ -127,8 +127,8 @@ export default function ThemeSelectorModal({
           </div>
         </div>
 
-        {/* Section 2: Dragon Customization (when Dragon or Hybrid mode active) */}
-        {(bgAnimMode === 'dragon' || bgAnimMode === 'hybrid') && (
+        {/* Section 2: Griffin Customization */}
+        {(bgAnimMode === 'griffin' || bgAnimMode === 'hybrid') && (
           <div style={{
             marginBottom: '20px',
             padding: '14px',
@@ -137,16 +137,16 @@ export default function ThemeSelectorModal({
             border: '1px solid rgba(99, 102, 241, 0.2)'
           }}>
             <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-              <Flame size={15} color="var(--primary)" /> Dragon Element & Color Style
+              <Feather size={15} color="var(--primary)" /> Griffin Element & Feather Style
             </label>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '8px', marginBottom: '14px' }}>
-              {dragonElements.map((el) => {
-                const isSel = dragonTheme === el.id;
+              {griffinElements.map((el) => {
+                const isSel = griffinTheme === el.id;
                 return (
                   <button
                     key={el.id}
-                    onClick={() => setDragonTheme && setDragonTheme(el.id)}
+                    onClick={() => setGriffinTheme && setGriffinTheme(el.id)}
                     style={{
                       background: isSel ? 'rgba(99, 102, 241, 0.25)' : 'var(--bg-surface)',
                       border: isSel ? `2px solid ${el.primary}` : '1px solid var(--border-color)',
@@ -166,41 +166,41 @@ export default function ThemeSelectorModal({
               })}
             </div>
 
-            {/* Sliders for Dragon Size & Speed */}
+            {/* Sliders for Griffin Size & Speed */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px', fontWeight: 600 }}>
-                  <span>Dragon Scale / Size</span>
-                  <span style={{ color: 'var(--primary)' }}>{Math.round(dragonSize * 100)}%</span>
+                  <span>Griffin Scale & Wingspan</span>
+                  <span style={{ color: 'var(--primary)' }}>{Math.round(griffinSize * 100)}%</span>
                 </div>
                 <input
                   type="range"
                   min="0.7"
                   max="1.5"
                   step="0.1"
-                  value={dragonSize}
-                  onChange={(e) => setDragonSize && setDragonSize(parseFloat(e.target.value))}
+                  value={griffinSize}
+                  onChange={(e) => setGriffinSize && setGriffinSize(parseFloat(e.target.value))}
                   style={{ width: '100%', accentColor: 'var(--primary)', cursor: 'pointer' }}
                 />
               </div>
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '4px', fontWeight: 600 }}>
-                  <span>Dragon Speed & Agility</span>
-                  <span style={{ color: 'var(--primary)' }}>{Math.round(dragonSpeed * 100)}%</span>
+                  <span>Griffin Flight Speed & Agility</span>
+                  <span style={{ color: 'var(--primary)' }}>{Math.round(griffinSpeed * 100)}%</span>
                 </div>
                 <input
                   type="range"
                   min="0.6"
                   max="1.8"
                   step="0.1"
-                  value={dragonSpeed}
-                  onChange={(e) => setDragonSpeed && setDragonSpeed(parseFloat(e.target.value))}
+                  value={griffinSpeed}
+                  onChange={(e) => setGriffinSpeed && setGriffinSpeed(parseFloat(e.target.value))}
                   style={{ width: '100%', accentColor: 'var(--primary)', cursor: 'pointer' }}
                 />
               </div>
 
-              {/* Toggle Fire Breath Embers */}
+              {/* Toggle Feather Sparks */}
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -210,11 +210,11 @@ export default function ThemeSelectorModal({
                 marginTop: '4px',
                 cursor: 'pointer'
               }}>
-                <span>Breathing Fire Embers on Movement & Click</span>
+                <span>Feather & Sunbeam Sparks on Flight & Click</span>
                 <input
                   type="checkbox"
-                  checked={enableFireBreath}
-                  onChange={(e) => setEnableFireBreath && setEnableFireBreath(e.target.checked)}
+                  checked={enableFeatherSparks}
+                  onChange={(e) => setEnableFeatherSparks && setEnableFeatherSparks(e.target.checked)}
                   style={{ width: '16px', height: '16px', accentColor: 'var(--primary)', cursor: 'pointer' }}
                 />
               </label>

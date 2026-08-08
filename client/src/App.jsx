@@ -8,7 +8,7 @@ import AuthModal from './components/AuthModal';
 import AnimatedBackground from './components/AnimatedBackground';
 import CursorFollower from './components/CursorFollower';
 import ThemeSelectorModal from './components/ThemeSelectorModal';
-import { Sparkles, CheckCircle2, Loader2, Plus, Flame } from 'lucide-react';
+import { Sparkles, CheckCircle2, Loader2, Plus, Feather } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -22,7 +22,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   
-  // Theme & Background Dragon State
+  // Theme & Background Griffin State
   const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'midnight');
   const [bgColorMode, setBgColorMode] = useState(localStorage.getItem('app-bg-mode') || 'theme');
   const [customBgColor, setCustomBgColor] = useState(localStorage.getItem('app-custom-bg') || '#0b0f19');
@@ -33,17 +33,17 @@ export default function App() {
     localStorage.getItem('app-cursor-ring') !== 'false'
   );
 
-  // Dragon Customizer State
-  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'dragon');
-  const [dragonTheme, setDragonTheme] = useState(localStorage.getItem('app-dragon-theme') || 'inferno');
-  const [dragonSize, setDragonSize] = useState(
-    parseFloat(localStorage.getItem('app-dragon-size')) || 1.0
+  // Griffin Customizer State
+  const [bgAnimMode, setBgAnimMode] = useState(localStorage.getItem('app-bg-anim-mode') || 'griffin');
+  const [griffinTheme, setGriffinTheme] = useState(localStorage.getItem('app-griffin-theme') || 'golden');
+  const [griffinSize, setGriffinSize] = useState(
+    parseFloat(localStorage.getItem('app-griffin-size')) || 1.0
   );
-  const [dragonSpeed, setDragonSpeed] = useState(
-    parseFloat(localStorage.getItem('app-dragon-speed')) || 1.0
+  const [griffinSpeed, setGriffinSpeed] = useState(
+    parseFloat(localStorage.getItem('app-griffin-speed')) || 1.0
   );
-  const [enableFireBreath, setEnableFireBreath] = useState(
-    localStorage.getItem('app-fire-breath') !== 'false'
+  const [enableFeatherSparks, setEnableFeatherSparks] = useState(
+    localStorage.getItem('app-feather-sparks') !== 'false'
   );
 
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
@@ -91,20 +91,20 @@ export default function App() {
   }, [bgAnimMode]);
 
   useEffect(() => {
-    localStorage.setItem('app-dragon-theme', dragonTheme);
-  }, [dragonTheme]);
+    localStorage.setItem('app-griffin-theme', griffinTheme);
+  }, [griffinTheme]);
 
   useEffect(() => {
-    localStorage.setItem('app-dragon-size', dragonSize.toString());
-  }, [dragonSize]);
+    localStorage.setItem('app-griffin-size', griffinSize.toString());
+  }, [griffinSize]);
 
   useEffect(() => {
-    localStorage.setItem('app-dragon-speed', dragonSpeed.toString());
-  }, [dragonSpeed]);
+    localStorage.setItem('app-griffin-speed', griffinSpeed.toString());
+  }, [griffinSpeed]);
 
   useEffect(() => {
-    localStorage.setItem('app-fire-breath', enableFireBreath.toString());
-  }, [enableFireBreath]);
+    localStorage.setItem('app-feather-sparks', enableFeatherSparks.toString());
+  }, [enableFeatherSparks]);
 
   // Check auth user on mount
   useEffect(() => {
@@ -295,16 +295,16 @@ export default function App() {
 
   return (
     <>
-      {/* Animated Canvas Background with Cursor Dragon Animation */}
+      {/* Animated Canvas Background with Cursor Griffin Animation */}
       <AnimatedBackground
         theme={theme}
         bgColor={getEffectiveBgColor()}
         enableCursorFx={enableCursorFx}
         bgAnimMode={bgAnimMode}
-        dragonTheme={dragonTheme}
-        dragonSize={dragonSize}
-        dragonSpeed={dragonSpeed}
-        enableFireBreath={enableFireBreath}
+        griffinTheme={griffinTheme}
+        griffinSize={griffinSize}
+        griffinSpeed={griffinSpeed}
+        enableFeatherSparks={enableFeatherSparks}
       />
 
       {/* Sleek Precision Cursor Follower Ring */}
@@ -388,7 +388,7 @@ export default function App() {
 
             <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Welcome to TaskMaster</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Full-stack Task Management Web Application with cursor-based Dragon Background animation and real-time WebSockets.
+              Full-stack Task Management Web Application with cursor-based Griffin Background animation and real-time WebSockets.
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
@@ -396,14 +396,14 @@ export default function App() {
                 Sign In or Register
               </button>
               <button className="btn btn-secondary" onClick={() => setIsThemeModalOpen(true)} style={{ padding: '10px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Flame size={16} color="var(--primary)" /> Customize Dragon & Background
+                <Feather size={16} color="var(--primary)" /> Customize Griffin & Background
               </button>
             </div>
 
             {/* Key Features Overview Pills */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <CheckCircle2 size={15} color="var(--primary)" /> Interactive Dragon Animation
+                <CheckCircle2 size={15} color="var(--primary)" /> Interactive Griffin Animation
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 <CheckCircle2 size={15} color="var(--primary)" /> Real-time WebSockets
@@ -419,7 +419,7 @@ export default function App() {
         <button
           onClick={() => setIsThemeModalOpen(true)}
           className="glass-panel"
-          title="Quick Customize Dragon & Background"
+          title="Quick Customize Griffin & Background"
           style={{
             position: 'fixed',
             bottom: '24px',
@@ -440,8 +440,8 @@ export default function App() {
             transition: 'all 0.25 ease'
           }}
         >
-          <Flame size={18} color="var(--primary)" style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }} />
-          <span>Background & Dragon</span>
+          <Feather size={18} color="var(--primary)" style={{ filter: 'drop-shadow(0 0 6px var(--primary))' }} />
+          <span>Background & Griffin</span>
         </button>
 
         {/* Mobile Floating Action Button (FAB) for logged-in users */}
@@ -467,7 +467,7 @@ export default function App() {
           onAuthSuccess={handleAuthSuccess}
         />
 
-        {/* Theme & Background Dragon Selector Modal */}
+        {/* Theme & Background Griffin Selector Modal */}
         <ThemeSelectorModal
           isOpen={isThemeModalOpen}
           onClose={() => setIsThemeModalOpen(false)}
@@ -483,14 +483,14 @@ export default function App() {
           setEnableCursorRing={setEnableCursorRing}
           bgAnimMode={bgAnimMode}
           setBgAnimMode={setBgAnimMode}
-          dragonTheme={dragonTheme}
-          setDragonTheme={setDragonTheme}
-          dragonSize={dragonSize}
-          setDragonSize={setDragonSize}
-          dragonSpeed={dragonSpeed}
-          setDragonSpeed={setDragonSpeed}
-          enableFireBreath={enableFireBreath}
-          setEnableFireBreath={setEnableFireBreath}
+          griffinTheme={griffinTheme}
+          setGriffinTheme={setGriffinTheme}
+          griffinSize={griffinSize}
+          setGriffinSize={setGriffinSize}
+          griffinSpeed={griffinSpeed}
+          setGriffinSpeed={setGriffinSpeed}
+          enableFeatherSparks={enableFeatherSparks}
+          setEnableFeatherSparks={setEnableFeatherSparks}
         />
       </div>
     </>
